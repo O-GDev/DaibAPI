@@ -114,7 +114,7 @@ diabetes_model = pickle.load(open('diabetes_model.sav', 'rb'))
 # class PredictDiabetes(BaseModel):
 
 # Create the FastAPI app
-app = FastAPI();
+app = FastAPI()
 
 #for signup page
 # Define the signup endpoint
