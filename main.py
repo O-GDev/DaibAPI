@@ -65,7 +65,8 @@ user = sqlalchemy.Table(
     metadata,
     sqlalchemy.Column("id", sqlalchemy.Integer, primary_key=True),
     sqlalchemy.Column("username", sqlalchemy.String),
-    sqlalchemy.Column("password", sqlalchemy.Boolean),
+    sqlalchemy.Column("email", sqlalchemy.String),
+    sqlalchemy.Column("password", sqlalchemy.String),
 )
 
 engine = sqlalchemy.create_engine(
@@ -148,19 +149,18 @@ diabetes_model = pickle.load(open('diabetes_model.sav', 'rb'))
 app = FastAPI()
 #for signup page
 # Define the signup endpoint
-# @app.on_event('startup')
-# async def startup():
-#     await database.connect()
+@app.on_event("startup")
+async def startup():
+    await database.connect()
 
-# @app.on_event('startup')
-# async def startup():
-#     await database.connect()
-        
+@app.on_event("shutdown")
+async def shutdown():
+    await database.disconnect()
 @app.post("/signup")
 async def signup(userC: UserCreate):
     query = user.insert().values(username=userC.username, email=userC.email, password=userC.password)
-    # last_record_id = await database.execute(query)
-    return{"message":"Signup Successful"}
+    last_record_id = await database.execute(query)
+    return {**userC.dict(), "id": last_record_id}
     # await
     # Create a new user object from the request body
     # db_user = User(username=user.username, email=user.email, password=user.password)
@@ -181,18 +181,20 @@ async def signup(userC: UserCreate):
 #     return {}
 
 # #for login page
-# @app.post("/login/")
-# def login(user: UserLogin):
-#     # Get the user from the database by email
-#     db = SessionLocal()
+@app.post("/login/")
+async def login(userL: UserLogin):
+    # Get the user from the database by email
+    db_user = user.select()
+    db_user_ = await database.fetch_one(db_user)
+    #     db = SessionLocal()
 #     db_user = db.query(User).filter(User.email == user.email).first()
     
 #     # Check if the user exists and the password is correct
-#     if not db_user or db_user.password != user.password:
-#         raise HTTPException(status_code=401, detail="Invalid email or password")
+    # if not db_user.email != userL.email or db_user.password != userL.password:
+    #     raise HTTPException(status_code=401, detail="Invalid email or password")
     
 #     # Return the user
-#     return {"message": "successful"}
+    return db_user_
 
 
 # class Profile(BaseModel):
