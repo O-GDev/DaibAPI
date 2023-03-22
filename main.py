@@ -149,13 +149,13 @@ diabetes_model = pickle.load(open('diabetes_model.sav', 'rb'))
 app = FastAPI()
 #for signup page
 # Define the signup endpoint
-@app.on_event("startup")
-async def startup():
-    await database.connect()
+# @app.on_event("startup")
+# async def startup():
+#     await database.connect()
 
-@app.on_event("shutdown")
-async def shutdown():
-    await database.disconnect()
+# @app.on_event("shutdown")
+# async def shutdown():
+#     await database.disconnect()
 @app.post("/signup")
 async def signup(userC: UserCreate):
     query = user.insert().values(username=userC.username, email=userC.email, password=userC.password)
