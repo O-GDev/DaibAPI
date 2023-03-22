@@ -69,7 +69,7 @@ user = sqlalchemy.Table(
 )
 
 engine = sqlalchemy.create_engine(
-    DATABASE_URL,connect_args={"check_same_thread": False}
+    DATABASE_URL
 )
 
 metadata.create_all(engine)
@@ -148,11 +148,11 @@ diabetes_model = pickle.load(open('diabetes_model.sav', 'rb'))
 app = FastAPI()
 #for signup page
 # Define the signup endpoint
-@app.onevent('startup')
+@app.on_event('startup')
 async def startup():
     await database.connect()
 
-@app.onevent('startup')
+@app.on_event('startup')
 async def startup():
     await database.connect()
         
