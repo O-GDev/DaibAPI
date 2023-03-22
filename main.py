@@ -156,10 +156,10 @@ app = FastAPI()
 # async def startup():
 #     await database.connect()
         
-@app.post("/signup/", response_model=UserCreates)
-async def signup(user: UserCreate):
-    query = user.insert().values(username=user.username, password=user.password)
-    last_record_id = await database.execute(query)
+@app.post("/signup")
+async def signup(userC: UserCreate):
+    query = user.insert().values(username=userC.username, email=userC.email, password=userC.password)
+    # last_record_id = await database.execute(query)
     return{"message":"Signup Successful"}
     # await
     # Create a new user object from the request body
