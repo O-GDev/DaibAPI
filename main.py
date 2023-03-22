@@ -69,6 +69,16 @@ user = sqlalchemy.Table(
     sqlalchemy.Column("password", sqlalchemy.String),
 )
 
+feedback = sqlalchemy.Table(
+    "feedback",
+    metadata,
+    sqlalchemy.Column("id", sqlalchemy.Integer, primary_key=True),
+    sqlalchemy.Column("email", sqlalchemy.String),
+    sqlalchemy.Column("message1", sqlalchemy.String),
+    sqlalchemy.Column("message2", sqlalchemy.String),
+    sqlalchemy.Column("message3", sqlalchemy.String),
+)
+
 engine = sqlalchemy.create_engine(
     DATABASE_URL
 )
@@ -149,13 +159,13 @@ diabetes_model = pickle.load(open('diabetes_model.sav', 'rb'))
 app = FastAPI()
 #for signup page
 # Define the signup endpoint
-@app.on_event("startup")
-async def startup():
-    await database.connect()
+# @app.on_event("startup")
+# async def startup():
+#     await database.connect()
 
-@app.on_event("shutdown")
-async def shutdown():
-    await database.disconnect()
+# @app.on_event("shutdown")
+# async def shutdown():
+#     await database.disconnect()
 @app.post("/signup")
 async def signup(userC: UserCreate):
     query = user.insert().values(username=userC.username, email=userC.email, password=userC.password)
@@ -198,45 +208,47 @@ async def login(userL: UserLogin):
 #     # Return the user
     return {"message":"Signin Successful"}
 
-# class Profile(BaseModel):
-#     name: str
-#     email: str
-#     bio: str
+class Profile(BaseModel):
+    name: str
+    email: str
+    bio: str
 
 
 # #for profile page
-# @app.put("/profile/")
-# async def create_profile(profile: Profile, profile_pic: UploadFile = File(...)):
+@app.put("/profile/")
+async def create_profile(profile: Profile, profile_pic: UploadFile = File(...)):
 
-#     return {"profile": profile, "profile_pic_filename": profile_pic.filename}
-# @app.get("/profile/")
-# def get_profiles():
-#     db = SessionLocal()
-#     profiles = db.query(User.email,User.username,)
-#     db.close()
-#     return{"message": profiles}
-# class PasswordResetRequest(BaseModel):
-#     email: str
+    return {"profile": profile, "profile_pic_filename": profile_pic.filename}
+@app.get("/profile/")
+async def get_profiles():
+    # db = SessionLocal()
+    # profiles = db.query(User.email,User.username,)
+    # db.close()
+    profiles = user.select()
+    db_profiles_ = await database.fetch_one(profiles)
+    return{"message": db_profiles_}
+class PasswordResetRequest(BaseModel):
+    email: str
 
-# class UserOut(BaseModel):
-#     username: str
-#     email: str
-
+class UserOut(BaseModel):
+    username: str
+    email: str
 
 # password_reset_requests = []
 
-# @app.post("/forgot-password/")
-# async def request_password_reset(request: PasswordResetRequest):
-#     # Retrieve user with matching email from database
-#     db = SessionLocal()
-#     user = db.query(User).filter(User.email == request.email).first()
-#     db.close()
+@app.get("/forgot-password/")
+async def request_password_reset(request: PasswordResetRequest):
+    # Retrieve user with matching email from database
+    user_ = user.select().where(user.c.email == request.email)
+    # db = SessionLocal()
+    # user = db.query(User).filter(User.email == request.email).first()
+    # db.close()
 
-#     if user:
-#         # Send password reset email to the user's email address
-#         return {"message": "Password reset email sent"}
-#     else:
-#         return {"message": "User not found"}
+    if user_:
+        # Send password reset email to the user's email address
+        return {"message": "Password reset email sent"}
+    else:
+        return {"message": "User not found"}
 
 # @app.get("/users/")
 # async def list_users():
@@ -259,40 +271,41 @@ async def login(userL: UserLogin):
 
 #     return {"message": "User deleted"}
 
-# @app.post("/feedback/")
-# def Feedback(feed_back: Feedbacks):
-#       db = SessionLocal()
-#       db_feedback = Feed(feed_back.email,feed_back.message1,feed_back.message2,feed_back.message3) 
-#       db.add(db_feedback)
-#       db.commit()
-#       db.refresh(db_feedback)
-#       return {"message": "Thank you for your feedback!"}
+@app.post("/feedback/")
+def Feedback(feed_back: Feedbacks):
+      db_feedback = feedback.insert().values(message1=feed_back.message1,message2=feed_back.message2,message3=feed_back.message3)
+    #   db = SessionLocal()
+    #   db_feedback = Feed(feed_back.email,feed_back.message1,feed_back.message2,feed_back.message3) 
+    #   db.add(db_feedback)
+    #   db.commit()
+    #   db.refresh(db_feedback)
+      return {"message": "Thank you for your feedback!"}
 
-# @app.post('/diabetes_prediction')
-# def diabetes_predd(input_parameters : model_input):
+@app.post('/diabetes_prediction')
+def diabetes_predd(input_parameters : model_input):
     
-#     input_data = input_parameters.json()
-#     input_dictionary = json.loads(input_data)
+    input_data = input_parameters.json()
+    input_dictionary = json.loads(input_data)
     
-#     preg = input_dictionary['pregnancies']
-#     glu = input_dictionary['Glucose']
-#     bp = input_dictionary['BloodPressure']
-#     skin = input_dictionary['SkinThickness']
-#     insulin = input_dictionary['Insulin']
-#     bmi = input_dictionary['BMI']
-#     dpf = input_dictionary['DiabetesPedigreeFunction']
-#     age = input_dictionary['Age']
+    preg = input_dictionary['pregnancies']
+    glu = input_dictionary['Glucose']
+    bp = input_dictionary['BloodPressure']
+    skin = input_dictionary['SkinThickness']
+    insulin = input_dictionary['Insulin']
+    bmi = input_dictionary['BMI']
+    dpf = input_dictionary['DiabetesPedigreeFunction']
+    age = input_dictionary['Age']
     
     
-#     input_list = [preg, glu, bp, skin, insulin, bmi, dpf, age]
+    input_list = [preg, glu, bp, skin, insulin, bmi, dpf, age]
     
-#     prediction = diabetes_model.predict([input_list])
+    prediction = diabetes_model.predict([input_list])
     
-#     if (prediction == 0):
-#         return 'The person is not diabetic'
-#     else:
-#         return 'The person is diabetic'
-#     return{"message" : "successful"} 
+    if (prediction == 0):
+        return 'The person is not diabetic'
+    else:
+        return 'The person is diabetic'
+    return{"message" : "successful"} 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
