@@ -24,7 +24,7 @@ import databases
 
 diabetes_dataset = pd.read_csv('diabetes.csv') 
 
-print(diabetes_dataset.head())
+# print(diabetes_dataset.head())
 diabetes_dataset.head()
 
 X = diabetes_dataset.drop(columns = 'Outcome', axis=1)
@@ -33,7 +33,7 @@ Y = diabetes_dataset['Outcome']
 
 X_train, X_test, Y_train, Y_test = train_test_split(X,Y, test_size = 0.2, stratify=Y, random_state=2)
 
-print(X.shape, X_train.shape, X_test.shape)
+# print(X.shape, X_train.shape, X_test.shape)
 
 classifier = svm.SVC(kernel='linear')
 
@@ -42,12 +42,12 @@ classifier.fit(X_train, Y_train)
 X_train_prediction = classifier.predict(X_train)
 training_data_accuracy = accuracy_score(X_train_prediction, Y_train)
 
-print('Accuracy score of the training data : ', training_data_accuracy)
+# print('Accuracy score of the training data : ', training_data_accuracy)
 
 X_test_prediction = classifier.predict(X_test)
 test_data_accuracy = accuracy_score(X_test_prediction, Y_test)
 
-print('Accuracy score of the test data : ', test_data_accuracy)
+# print('Accuracy score of the test data : ', test_data_accuracy)
 
 
 filename = 'diabetes_model.sav'
@@ -149,13 +149,13 @@ diabetes_model = pickle.load(open('diabetes_model.sav', 'rb'))
 app = FastAPI()
 #for signup page
 # Define the signup endpoint
-# @app.on_event("startup")
-# async def startup():
-#     await database.connect()
+@app.on_event("startup")
+async def startup():
+    await database.connect()
 
-# @app.on_event("shutdown")
-# async def shutdown():
-#     await database.disconnect()
+@app.on_event("shutdown")
+async def shutdown():
+    await database.disconnect()
 @app.post("/signup")
 async def signup(userC: UserCreate):
     query = user.insert().values(username=userC.username, email=userC.email, password=userC.password)
@@ -184,12 +184,14 @@ async def signup(userC: UserCreate):
 @app.get("/login/") 
 async def login(userL: UserLogin):
     # Get the user from the database by email
-    db_user = user.select()
+    db_user = user.select().where(user.c.email == userL.email)
     db_user_ = await database.fetch_one(db_user)
     #     db = SessionLocal()
 #     db_user = db.query(User).filter(User.email == user.email).first()
     
 #     # Check if the user exists and the password is correct
+    # if not db_user or user.column.password != userL.password:
+    #     raise HTTPException(status_code=401, detail="Invalid email or password")
     if db_user_.email != userL.email or db_user_.password != userL.password:
         raise HTTPException(status_code=401, detail="Invalid email or password")
    
