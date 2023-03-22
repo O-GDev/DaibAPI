@@ -53,7 +53,7 @@ print('Accuracy score of the test data : ', test_data_accuracy)
 filename = 'diabetes_model.sav'
 pickle.dump(classifier, open(filename, 'wb'))
 
-DATABASE_URL = "postgresql://zkyaxnqrahshaq:f036cf58b6a8b19d7973e86c6315c3d06b349d95c460fbdbbf6f9d2e918a72a7@ec2-3-93-160-246.compute-1.amazonaws.com:5432/d4oiiepvk4n1bm"
+DATABASE_URL = "postgresql://jzvfuzitepousi:6002de9a9c937cd7e19d12f03bda50f051f931a9f3c76f5f7ae548c37b872472@ec2-3-234-204-26.compute-1.amazonaws.com:5432/d9g26788lhb1o6"
 
 database = databases.Database(DATABASE_URL)
 
@@ -69,7 +69,7 @@ user = sqlalchemy.Table(
 )
 
 engine = sqlalchemy.create_engine(
-    DATABASE_URL, connect_args={"check_same_thread": False}
+    DATABASE_URL,connect_args={"check_same_thread": False}
 )
 
 metadata.create_all(engine)
@@ -156,7 +156,7 @@ async def startup():
 async def startup():
     await database.connect()
         
-@app.post("/signup/")
+@app.post("/signup/", response_model=UserCreates)
 async def signup(user: UserCreate):
     query = user.insert().values(username=user.username, password=user.password)
     last_record_id = await database.execute(query)
