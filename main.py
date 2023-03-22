@@ -191,7 +191,7 @@ async def signup(userC: UserCreate):
 #     return {}
 
 # #for login page
-@app.get("/login/") 
+@app.get("/login") 
 async def login(userL: UserLogin):
     # Get the user from the database by email
     db_user = user.select().where(user.c.email == userL.email)
@@ -215,11 +215,11 @@ class Profile(BaseModel):
 
 
 # #for profile page
-@app.put("/profile/")
+@app.put("/profile")
 async def create_profile(profile: Profile, profile_pic: UploadFile = File(...)):
 
     return {"profile": profile, "profile_pic_filename": profile_pic.filename}
-@app.get("/profile/")
+@app.get("/profile")
 async def get_profiles():
     # db = SessionLocal()
     # profiles = db.query(User.email,User.username,)
@@ -236,7 +236,7 @@ class UserOut(BaseModel):
 
 # password_reset_requests = []
 
-@app.get("/forgot-password/")
+@app.get("/forgot-password")
 async def request_password_reset(request: PasswordResetRequest):
     # Retrieve user with matching email from database
     user_ = user.select().where(user.c.email == request.email)
@@ -272,7 +272,7 @@ async def delete_user(user_email: str):
 
     return {"message": "User deleted"}
 
-@app.post("/feedback/")
+@app.post("/feedback")
 def Feedback(feed_back: Feedbacks):
       db_feedback = feedback.insert().values(message1=feed_back.message1,message2=feed_back.message2,message3=feed_back.message3)
     #   db = SessionLocal()
