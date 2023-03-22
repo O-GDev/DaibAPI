@@ -54,7 +54,6 @@ filename = 'diabetes_model.sav'
 pickle.dump(classifier, open(filename, 'wb'))
 
 DATABASE_URL = "postgresql://jzvfuzitepousi:6002de9a9c937cd7e19d12f03bda50f051f931a9f3c76f5f7ae548c37b872472@ec2-3-234-204-26.compute-1.amazonaws.com:5432/d9g26788lhb1o6"
-
 database = databases.Database(DATABASE_URL)
 
 metadata = sqlalchemy.MetaData()
