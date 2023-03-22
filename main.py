@@ -260,16 +260,17 @@ async def request_password_reset(request: PasswordResetRequest):
 #     # Return list of UserOut objects
 #     return [UserOut(username=user.username, email=user.email, id=user.id) for user in users]
 
-# @app.delete("/users/{user_email}")
-# async def delete_user(user_email: str):
-#     # Delete user with given ID from database
+@app.delete("/users/{user_email}")
+async def delete_user(user_email: str):
+    user = user.delete().where(user_email.email == user.email)
+    # Delete user with given ID from database
 #     db = SessionLocal()
 #     user = db.query(User).filter(User.email == user_email).first()
 #     db.delete(user)
 #     db.commit()
 #     db.close()
 
-#     return {"message": "User deleted"}
+    return {"message": "User deleted"}
 
 @app.post("/feedback/")
 def Feedback(feed_back: Feedbacks):
