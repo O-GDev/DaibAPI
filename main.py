@@ -181,7 +181,7 @@ async def signup(userC: UserCreate):
 #     return {}
 
 # #for login page
-@app.post("/login/")
+@app.get("/login/") 
 async def login(userL: UserLogin):
     # Get the user from the database by email
     db_user = user.select()
@@ -190,12 +190,11 @@ async def login(userL: UserLogin):
 #     db_user = db.query(User).filter(User.email == user.email).first()
     
 #     # Check if the user exists and the password is correct
-    # if not db_user.email != userL.email or db_user.password != userL.password:
-    #     raise HTTPException(status_code=401, detail="Invalid email or password")
-    
+    if db_user_.email != userL.email or db_user_.password != userL.password:
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+   
 #     # Return the user
-    return db_user_
-
+    return {"message":"Signin Successful"}
 
 # class Profile(BaseModel):
 #     name: str
