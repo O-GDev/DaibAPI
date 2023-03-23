@@ -185,18 +185,14 @@ async def signup(userC: UserCreate):
     # return {"message": db_user}
 
 
-<<<<<<< HEAD
 @app.get("/")
 async def root():
     # raise HTTPException(status_code=404, detail="page not found")
     return _responses.RedirectResponse("/docs")
-=======
 # @app.get("/")
 # async def root():
   #  raise HTTPException(status_code=404, detail="page not found")
    # return {}
->>>>>>> 4cdceab51ad8d49ffeed8d2faeafa51ee013cf97
-
 # #for login page
 @app.get("/login")
 
