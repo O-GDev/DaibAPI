@@ -253,7 +253,7 @@ async def request_password_reset(request: PasswordResetRequest):
     # user = db.query(User).filter(User.email == request.email).first()
     # db.close()
 
-    if db_user_.email == request.email:
+    if db_user_.c.email == request.email:
         # Send password reset email to the user's email address
         return {"message": "Password reset email sent"}
     else:
