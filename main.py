@@ -157,6 +157,15 @@ diabetes_model = pickle.load(open('diabetes_model.sav', 'rb'))
 
 # Create the FastAPI app
 app = FastAPI()
+
+@app.get("/")
+async def root():
+    # raise HTTPException(status_code=404, detail="page not found")
+    return _responses.RedirectResponse("/docs")
+# @app.get("/")
+# async def root():
+  #  raise HTTPException(status_code=404, detail="page not found")
+   # return {}
 #for signup page
 # Define the signup endpoint
 # @app.on_event("startup")
@@ -184,15 +193,6 @@ async def signup(userC: UserCreate):
     # Return the newly created user
     # return {"message": db_user}
 
-
-@app.get("/")
-async def root():
-    # raise HTTPException(status_code=404, detail="page not found")
-    return _responses.RedirectResponse("/docs")
-# @app.get("/")
-# async def root():
-  #  raise HTTPException(status_code=404, detail="page not found")
-   # return {}
 # #for login page
 @app.get("/login")
 
