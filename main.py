@@ -65,7 +65,7 @@ user = sqlalchemy.Table(
     metadata,
     sqlalchemy.Column("id", sqlalchemy.Integer, primary_key=True),
     sqlalchemy.Column("username", sqlalchemy.String),
-    sqlalchemy.Column("email", sqlalchemy.String),
+    sqlalchemy.Column("email", sqlalchemy.String,unique=True),
     sqlalchemy.Column("password", sqlalchemy.String),
 )
 
@@ -178,9 +178,14 @@ async def root():
 @app.post("/signup")
 async def signup(userC: UserCreate):
     await database.connect()
-    query = user.insert().values(username=userC.username, email=userC.email, password=userC.password)
-    last_record_id = await database.execute(query)
-    return {**userC.dict(), "id": last_record_id}
+    db_user_create = user.select().where(user.c.email == userC.email or user.c.username == userC.username)
+    db_user_create_ = await database.fetch_one(db_user_create)
+    if db_user_create_ is None:
+        query = user.insert().values(username=userC.username, email=userC.email, password=userC.password)
+        last_record_id = await database.execute(query)
+        return {**userC.dict(), "id": last_record_id}
+    else:
+        raise HTTPException(status_code=400, detail="email or username already exist") 
    
 # #for login page
 @app.get("/login")
@@ -190,7 +195,7 @@ async def login(userL: UserLogin):
     db_user = user.select().where(user.c.email == userL.email)
     db_user_ = await database.fetch_one(db_user)
     
-    if not db_user or db_user_.email != userL.email or db_user_.password != userL.password:
+    if db_user_ is None or db_user_.password != userL.password:
         raise HTTPException(status_code=401, detail="invalid email or password")
     else:
         return{"message":"Signin Successful"}
