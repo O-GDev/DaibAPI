@@ -168,9 +168,9 @@ async def root():
    # return {}
 #for signup page
 # Define the signup endpoint
-# @app.on_event("startup")
-# async def startup():
-#     await database.connect()
+@app.on_event("startup")
+async def startup():
+    await database.connect()
 
 # @app.on_event("shutdown")
 # async def shutdown():
