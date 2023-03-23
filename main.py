@@ -247,12 +247,13 @@ class UserOut(BaseModel):
 async def request_password_reset(request: PasswordResetRequest):
     await database.connect()
     # Retrieve user with matching email from database
-    user_ = user.select().where(user.c.email == request.email)
+    user_ = user.select().where(user.c.email == request.email)    
+    db_user_ = await database.fetch_one(user_)
     # db = SessionLocal()
     # user = db.query(User).filter(User.email == request.email).first()
     # db.close()
 
-    if user_:
+    if db_user_.email == request.email:
         # Send password reset email to the user's email address
         return {"message": "Password reset email sent"}
     else:
