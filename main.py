@@ -187,10 +187,10 @@ async def signup(userC: UserCreate):
 async def login(userL: UserLogin):
     await database.connect()
     # Get the user from the database by email
-    db_user = user.select()#.where(user.c.email == userL.email)
+    db_user = user.select().where(user.c.email == userL.email)
     db_user_ = await database.fetch_one(db_user)
     
-    if db_user_.email != userL.email or db_user_.password != userL.password:
+    if not db_user or db_user_.email != userL.email or db_user_.password != userL.password:
         raise HTTPException(status_code=401, detail="invalid email or password")
     else:
         return{"message":"Signin Successful"}
