@@ -168,15 +168,16 @@ async def root():
    # return {}
 #for signup page
 # Define the signup endpoint
-@app.on_event("startup")
-async def startup():
-    await database.connect()
+# @app.on_event("startup")
+# async def startup():
+#     await database.connect()
 
 # @app.on_event("shutdown")
 # async def shutdown():
 #     await database.disconnect()
 @app.post("/signup")
 async def signup(userC: UserCreate):
+    await database.connect()
     query = user.insert().values(username=userC.username, email=userC.email, password=userC.password)
     last_record_id = await database.execute(query)
     return {**userC.dict(), "id": last_record_id}
@@ -195,10 +196,8 @@ async def signup(userC: UserCreate):
 
 # #for login page
 @app.get("/login")
-
-
-
 async def login(userL: UserLogin):
+    await database.connect()
     # Get the user from the database by email
     db_user = user.select().where(user.c.email == userL.email)
     db_user_ = await database.fetch_one(db_user)
@@ -223,10 +222,12 @@ class Profile(BaseModel):
 # #for profile page
 @app.put("/profile")
 async def create_profile(profile: Profile, profile_pic: UploadFile = File(...)):
+    await database.connect()
 
     return {"profile": profile, "profile_pic_filename": profile_pic.filename}
 @app.get("/profile")
 async def get_profiles():
+    await database.connect()
     # db = SessionLocal()
     # profiles = db.query(User.email,User.username,)
     # db.close()
@@ -244,6 +245,7 @@ class UserOut(BaseModel):
 
 @app.get("/forgot-password")
 async def request_password_reset(request: PasswordResetRequest):
+    await database.connect()
     # Retrieve user with matching email from database
     user_ = user.select().where(user.c.email == request.email)
     # db = SessionLocal()
@@ -268,6 +270,7 @@ async def request_password_reset(request: PasswordResetRequest):
 
 @app.delete("/users/{user_email}")
 async def delete_user(user_email: str):
+    await database.connect()
     user = user.delete().where(user_email.email == user.email)
     # Delete user with given ID from database
 #     db = SessionLocal()
@@ -279,7 +282,8 @@ async def delete_user(user_email: str):
     return {"message": "User deleted"}
 
 @app.post("/feedback")
-def Feedback(feed_back: Feedbacks):
+async def Feedback(feed_back: Feedbacks):
+      await database.connect()
       db_feedback = feedback.insert().values(message1=feed_back.message1,message2=feed_back.message2,message3=feed_back.message3)
     #   db = SessionLocal()
     #   db_feedback = Feed(feed_back.email,feed_back.message1,feed_back.message2,feed_back.message3) 
