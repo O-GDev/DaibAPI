@@ -1,6 +1,6 @@
 from fastapi import FastAPI ,HTTPException ,File, UploadFile,status
 from pydantic import BaseModel
-from sqlalchemy import create_engine, Column, Integer, String, Boolean
+from sqlalchemy import create_engine, Column, Integer, String, Boolean, false
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 # from passlib.hash import bcrypt
@@ -181,37 +181,22 @@ async def signup(userC: UserCreate):
     query = user.insert().values(username=userC.username, email=userC.email, password=userC.password)
     last_record_id = await database.execute(query)
     return {**userC.dict(), "id": last_record_id}
-    # await
-    # Create a new user object from the request body
-    # db_user = User(username=user.username, email=user.email, password=user.password)
-    
-    # Add the user to the database
-    # db = SessionLocal()
-    # db.add(db_user)
-    # db.commit()
-    # db.refresh(db_user)
-    
-    # Return the newly created user
-    # return {"message": db_user}
-
+   
 # #for login page
 @app.get("/login")
 async def login(userL: UserLogin):
     await database.connect()
     # Get the user from the database by email
-    db_user = user.select().where(user.c.email == userL.email)
+    db_user = user.select()#.where(user.c.email == userL.email)
     db_user_ = await database.fetch_one(db_user)
-    #     db = SessionLocal()
-#     db_user = db.query(User).filter(User.email == user.email).first()
     
-#     # Check if the user exists and the password is correct
-    # if not db_user or user.column.password != userL.password:
-    #     raise HTTPException(status_code=401, detail="Invalid email or password")
     if db_user_.email != userL.email or db_user_.password != userL.password:
-        raise HTTPException(status_code=401, detail="Invalid email or password")
-   
-#     # Return the user
-    return {"message":"Signin Successful"}
+        raise HTTPException(status_code=401, detail="invalid email or password")
+    else:
+        return{"message":"Signin Successful"}
+    # Return the user
+    # return{db_user_.password,userL.password}
+    # return {"message":"Signin Successful"}
 
 class Profile(BaseModel):
     name: str
