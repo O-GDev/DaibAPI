@@ -17,6 +17,7 @@ import os
 import psycopg2
 import sqlalchemy
 import databases
+import starlette.responses as _responses
 
 
 
@@ -187,11 +188,14 @@ async def signup(userC: UserCreate):
 
 @app.get("/")
 async def root():
-    raise HTTPException(status_code=404, detail="page not found")
-    return {}
+    # raise HTTPException(status_code=404, detail="page not found")
+    return _responses.RedirectResponse("/docs")
 
 # #for login page
-@app.get("/login") 
+@app.get("/login")
+
+
+
 async def login(userL: UserLogin):
     # Get the user from the database by email
     db_user = user.select().where(user.c.email == userL.email)
