@@ -55,7 +55,6 @@ filename = 'diabetes_model.sav'
 pickle.dump(classifier, open(filename, 'wb'))
 
 DATABASE_URL = "postgresql://jzvfuzitepousi:6002de9a9c937cd7e19d12f03bda50f051f931a9f3c76f5f7ae548c37b872472@ec2-3-234-204-26.compute-1.amazonaws.com:5432/d9g26788lhb1o6"
-
 database = databases.Database(DATABASE_URL)
 
 metadata = sqlalchemy.MetaData()
@@ -186,10 +185,17 @@ async def signup(userC: UserCreate):
     # return {"message": db_user}
 
 
+<<<<<<< HEAD
 @app.get("/")
 async def root():
     # raise HTTPException(status_code=404, detail="page not found")
     return _responses.RedirectResponse("/docs")
+=======
+# @app.get("/")
+# async def root():
+  #  raise HTTPException(status_code=404, detail="page not found")
+   # return {}
+>>>>>>> 4cdceab51ad8d49ffeed8d2faeafa51ee013cf97
 
 # #for login page
 @app.get("/login")
