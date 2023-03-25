@@ -64,7 +64,8 @@ user = sqlalchemy.Table(
     "user",
     metadata,
     sqlalchemy.Column("id", sqlalchemy.Integer, primary_key=True),
-    sqlalchemy.Column("username", sqlalchemy.String,unique=True),
+    sqlalchemy.Column("first_name", sqlalchemy.String,unique=True),
+    sqlalchemy.Column("last_name", sqlalchemy.String,unique=True),
     sqlalchemy.Column("email", sqlalchemy.String,unique=True),
     sqlalchemy.Column("password", sqlalchemy.String),
 )
@@ -128,13 +129,15 @@ class model_input(BaseModel):
 
 # Define the request body schema
 class UserCreate(BaseModel):
-    username: str
+    first_name: str
+    last_name:str
     email: str
     password: str
 
 class UserCreates(BaseModel):
     id: int
-    username: str
+    first_name:str
+    last_name:str
     email: str
     password: str
  
@@ -178,14 +181,14 @@ async def root():
 @app.post("/signup")
 async def signup(userC: UserCreate):
     await database.connect()
-    db_user_create = user.select().where(user.c.email == userC.email or user.c.username == userC.username)
+    db_user_create = user.select().where(user.c.email == userC.email or user.c.first_name == userC.first_name or user.c.last_name == userC.last_name)
     db_user_create_ = await database.fetch_one(db_user_create)
     if db_user_create_ is None:
-        query = user.insert().values(username=userC.username, email=userC.email, password=userC.password)
+        query = user.insert().values(first_name=userC.first_name, last_name=userC.last_name, email=userC.email, password=userC.password)
         last_record_id = await database.execute(query)
         return {**userC.dict(), "id": last_record_id}
     else:
-        raise HTTPException(status_code=400, detail="email or username already exist") 
+        raise HTTPException(status_code=400, detail="user already exist") 
    
 # #for login page
 @app.get("/login")
@@ -307,7 +310,7 @@ def diabetes_predd(input_parameters : model_input):
         return 'The person is not diabetic'
     else:
         return 'The person is diabetic'
-    return{"message" : "successful"} 
+    # return{"message" : "successful"} 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
