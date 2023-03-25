@@ -186,7 +186,7 @@ async def signup(userC: UserCreate):
     if db_user_create_ is None:
         query = user.insert().values(first_name=userC.first_name, last_name=userC.last_name, email=userC.email, password=userC.password)
         last_record_id = await database.execute(query)
-        return {**userC.dict(), "id": last_record_id}
+        return {**userC.dict(), "id": last_record_id, "status":'ok'}
     else:
         raise HTTPException(status_code=400, detail="user already exist") 
    
@@ -201,7 +201,7 @@ async def login(userL: UserLogin):
     if db_user_ is None or db_user_.password != userL.password:
         raise HTTPException(status_code=401, detail="invalid email or password")
     else:
-        return{"message":"Signin Successful"}
+        return{"message":"Signin Successful","status":"ok"}
     # Return the user
     # return{db_user_.password,userL.password}
     # return {"message":"Signin Successful"}
