@@ -4,6 +4,7 @@ from sqlalchemy import create_engine, Column, Integer, String, Boolean, false
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 # from passlib.hash import bcrypt
+import passlib.hash as _hash
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List
 import numpy as np
@@ -18,8 +19,12 @@ import psycopg2
 import sqlalchemy
 import databases
 import starlette.responses as _responses
+import fastapi.security as _security
+from .auth import AuthHandler
 
+_JWT_SECRET = ""
 
+auth_handler = AuthHandler()
 
 
 
@@ -68,6 +73,7 @@ user = sqlalchemy.Table(
     sqlalchemy.Column("last_name", sqlalchemy.String,unique=True),
     sqlalchemy.Column("email", sqlalchemy.String,unique=True),
     sqlalchemy.Column("password", sqlalchemy.String),
+    # sqlalchemy.Column("date_created", default = _dt.datetime.utcnow),    
 )
 
 feedback = sqlalchemy.Table(
@@ -107,6 +113,9 @@ class model_input(BaseModel):
     DiabetesPedigreeFunction : float
     Age : int      
 
+
+def verify_password(self, password: str):
+    return _hash.bycrypt.verify(password,self.hashed_password)
 # Define the User model
 # class User(Base):
 #     __tablename__ = "userss"
@@ -184,7 +193,8 @@ async def signup(userC: UserCreate):
     db_user_create = user.select().where(user.c.email == userC.email or user.c.first_name == userC.first_name or user.c.last_name == userC.last_name)
     db_user_create_ = await database.fetch_one(db_user_create)
     if db_user_create_ is None:
-        query = user.insert().values(first_name=userC.first_name, last_name=userC.last_name, email=userC.email, password=userC.password)
+        hashed_password = auth_handler.get_password_hash(userC.password)
+        query = user.insert().values(first_name=userC.first_name, last_name=userC.last_name, email=userC.email, password=hashed_password)
         last_record_id = await database.execute(query)
         return {**userC.dict(), "id": last_record_id, "status":'ok'}
     else:
