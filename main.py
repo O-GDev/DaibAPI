@@ -242,7 +242,7 @@ async def get_profiles(userP: Profiles):
     # query = user.insert().values(email=userP.email)
     profiles = user.select().where(userP.email == user.c.email)
     db_profiles_ = await database.fetch_one(profiles)
-    return{db_profiles_.last_name, db_profiles_.first_name}
+    return{"last_name": db_profiles_.last_name,"first_name": db_profiles_.first_name}
 class PasswordResetRequest(BaseModel):
     email: str
 
