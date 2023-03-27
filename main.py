@@ -233,15 +233,16 @@ async def create_profile(profile: Profile, profile_pic: UploadFile = File(...)):
     await database.connect()
 
     return {"profile": profile, "profile_pic_filename": profile_pic.filename}
-@app.get("/profile")
+@app.post("/profile")
 async def get_profiles(userP: Profiles):
     await database.connect()
     # db = SessionLocal()
     # profiles = db.query(User.email,User.username,)
     # db.close()
-    profiles = user.select().where(userP.email == user.email)
+    # query = user.insert().values(email=userP.email)
+    profiles = user.select().where(userP.email == user.c.email)
     db_profiles_ = await database.fetch_one(profiles)
-    return{"message": db_profiles_}
+    return{db_profiles_.last_name, db_profiles_.first_name}
 class PasswordResetRequest(BaseModel):
     email: str
 
