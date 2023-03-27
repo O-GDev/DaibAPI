@@ -196,8 +196,8 @@ async def signup(userC: UserCreate):
         hashed_password = auth_handler.get_password_hash(userC.password)
         query = user.insert().values(first_name=userC.first_name, last_name=userC.last_name, email=userC.email, password=hashed_password)
         last_record_id = await database.execute(query)
-        
-        return {**userC.dict(), "id": last_record_id, "status":'ok'}
+        token = auth_handler.encode_token(userC.email)
+        return {**userC.dict(), "id": last_record_id, "status":'ok', "token": token}
     else:
         raise HTTPException(status_code=400, detail="user already exist") 
    
