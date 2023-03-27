@@ -20,9 +20,9 @@ import sqlalchemy
 import databases
 import starlette.responses as _responses
 import fastapi.security as _security
-from .auth import AuthHandler
+from auth import AuthHandler
 
-_JWT_SECRET = ""
+# _JWT_SECRET = ""
 
 auth_handler = AuthHandler()
 
@@ -196,22 +196,26 @@ async def signup(userC: UserCreate):
         hashed_password = auth_handler.get_password_hash(userC.password)
         query = user.insert().values(first_name=userC.first_name, last_name=userC.last_name, email=userC.email, password=hashed_password)
         last_record_id = await database.execute(query)
+        
         return {**userC.dict(), "id": last_record_id, "status":'ok'}
     else:
         raise HTTPException(status_code=400, detail="user already exist") 
    
 # #for login page
-@app.get("/login")
+@app.post("/login")
 async def login(userL: UserLogin):
     await database.connect()
     # Get the user from the database by email
     db_user = user.select().where(user.c.email == userL.email)
     db_user_ = await database.fetch_one(db_user)
     
-    if db_user_ is None or db_user_.password != userL.password:
+    # if db_user_ is None or db_user_.password != userL.password :
+    if db_user_ is None or not auth_handler.verify_password(userL.password, db_user_.password):
         raise HTTPException(status_code=401, detail="invalid email or password")
     else:
-        return{"message":"Signin Successful","status":"ok"}
+        token = auth_handler.encode_token(db_user_.email)
+        return{"message":"Signin Successful","status":"ok", "token": token }
+    
     # Return the user
     # return{db_user_.password,userL.password}
     # return {"message":"Signin Successful"}
