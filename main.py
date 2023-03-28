@@ -242,8 +242,8 @@ class Profiles(BaseModel):
 # async def create_upload_file(file: UploadFile):
 #     await database.connect()
 #     return {"filename": file_upload.filename}
-@app.post("/uploadfile/profile")
-async def create_upload_file(userC: Profiles, file: UploadFile = File(...)):
+# @app.post("/uploadfile/profile")
+# async def create_upload_file(userC: Profiles, file: UploadFile = File(...)):
     # FILEPATH = "./static/images/"
     # filename = file.filename
     # extension = filename.split(".")[1]
@@ -279,7 +279,7 @@ async def create_upload_file(userC: Profiles, file: UploadFile = File(...)):
     #         headers={"WWW-Athenticate": "Bearer"}
     #     )    
     # file_url = "https://diabetes-apis.herokuapp.com/" + generated_name[1:]
-    return{"status": "ok", }
+    # return{"status": "ok", "filename": file}
 
 
 
