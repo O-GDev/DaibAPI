@@ -234,14 +234,14 @@ class Profiles(BaseModel):
     email:str
 # #for profile page
 
-@app.post("/uploadfile/")
-async def create_upload_file(file: UploadFile):
-    await database.connect()
-    file_upload = user.insert().values(profile_pics=file)
-    return {"filename": file_upload.filename}
+# @app.post("/uploadfile/")
+# async def create_upload_file(file: UploadFile):
+#     await database.connect()
+#     return {"filename": file_upload.filename}
 @app.put("/profile")
 async def create_profile(profile: Profile, profile_pic: UploadFile):
     await database.connect()
+    file_upload = user.insert().values(profile_pics=profile_pic)
     profiles = user.select().where(Profile.email == user.c.email)
     db_profiles_ = await database.fetch_one(profiles)
     return {"profile": profile, "profile_pic_filename": profile_pic.filename}
