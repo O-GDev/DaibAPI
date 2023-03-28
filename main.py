@@ -21,10 +21,8 @@ import databases
 import starlette.responses as _responses
 import fastapi.security as _security
 from auth import AuthHandler
-# import secrets
-# from fastapi.staticfiles import StaticFiles
-# from PIL import Image
-
+import aiofiles
+import uuid
 
 app = FastAPI()
 
@@ -32,6 +30,7 @@ app = FastAPI()
 
 # app.mount("/static", StaticFiles(directory="static"), name="static") 
 auth_handler = AuthHandler()
+BASEDIR = os.path.dirname(__file__)
 
 
 
@@ -233,6 +232,7 @@ class Profile(BaseModel):
     occupation: str
     house_address: str
     phone_number: str
+    image: str
 
 class Profiles(BaseModel):
     email:str
@@ -284,8 +284,20 @@ class Profiles(BaseModel):
 
 
 @app.put("/profile")
-async def create_profile(file: UploadFile=File(...)):
-    return {"size of the file":file.filename }
+async def create_profile(file: UploadFile): 
+    _, ext = os.path.splitext(file.filename)
+    img_dir = os.path.join(BASEDIR, 'statics/media')
+    if not os.path.exists(img_dir):
+        os.makedirs(img_dir)
+    content = await file.read()
+    if file.content_type not in ['image/jpeg', 'image/png']:
+        raise HTTPException(status_code=406, detail="Only .jpeg or .png  files allowed")
+    file_name = f'{uuid.uuid4().hex}{ext}'
+    async with aiofiles.open(os.path.join(img_dir, file_name), mode='wb') as f:
+        await f.write(content)
+
+    return file_name
+    # return {"size of the file":file.filename }
 @app.post("/profile")
 async def get_profiles(userP: Profiles):
     await database.connect()
