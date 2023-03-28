@@ -244,42 +244,42 @@ class Profiles(BaseModel):
 #     return {"filename": file_upload.filename}
 @app.post("/uploadfile/profile")
 async def create_upload_file(userC: Profiles, file: UploadFile = File(...)):
-    FILEPATH = "./static/images/"
-    filename = file.filename
-    extension = filename.split(".")[1]
+    # FILEPATH = "./static/images/"
+    # filename = file.filename
+    # extension = filename.split(".")[1]
 
-    if extension not in ["PNG", "JPG"]:
-        return {"status":"error", "detail": "File extension not supported"}
+    # if extension not in ["PNG", "JPG"]:
+    #     return {"status":"error", "detail": "File extension not supported"}
     
-    token_name = secrets.token_hex(10)+"."+extension
-    generated_name = FILEPATH + token_name
-    file_content = await file.read()
+    # token_name = secrets.token_hex(10)+"."+extension
+    # generated_name = FILEPATH + token_name
+    # file_content = await file.read()
 
-    with open(generated_name, "wb") as file:
-        file.write(file_content)
+    # with open(generated_name, "wb") as file:
+    #     file.write(file_content)
 
 
-    img = Image.open(generated_name)    
-    img = img.resize(size =(200, 200))
-    img.save(generated_name)
+    # img = Image.open(generated_name)    
+    # img = img.resize(size =(200, 200))
+    # img.save(generated_name)
 
-    file.close()
+    # file.close()
 
-    db_user = user.select().where(user.c.email == userC.email)
+    # db_user = user.select().where(user.c.email == userC.email)
     # db_user_ = await database.fetch_one(db_user)
 
-    if db_user:
-        profile_pics = token_name
-        await profile_pics.save()
+    # if db_user:
+    #     profile_pics = token_name
+    #     await profile_pics.save()
 
-    else:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not authorised to perform this action",
-            headers={"WWW-Athenticate": "Bearer"}
-        )    
-    file_url = "https://diabetes-apis.herokuapp.com/" + generated_name[1:]
-    return{"status": "ok", "filename": file_url}
+    # else:
+    #     raise HTTPException(
+    #         status_code=status.HTTP_401_UNAUTHORIZED,
+    #         detail="Not authorised to perform this action",
+    #         headers={"WWW-Athenticate": "Bearer"}
+    #     )    
+    # file_url = "https://diabetes-apis.herokuapp.com/" + generated_name[1:]
+    return{"status": "ok", }
 
 
 
