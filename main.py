@@ -284,12 +284,8 @@ class Profiles(BaseModel):
 
 
 @app.put("/profile")
-async def create_profile(profile: Profile, file: bytes=File(...)):
-    await database.connect()
-    # file_upload = user.insert().values(profile_pics=profile_pic)
-    # profiles = user.select().where(Profile.email == user.c.email)
-    # db_profiles_ = await database.fetch_one(profiles)
-    return {"profile": profile,"size of the file":len(file) }
+async def create_profile(file: UploadFile=File(...)):
+    return {"size of the file":file.filename }
 @app.post("/profile")
 async def get_profiles(userP: Profiles):
     await database.connect()
