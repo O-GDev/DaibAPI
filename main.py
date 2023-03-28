@@ -73,6 +73,10 @@ user = sqlalchemy.Table(
     sqlalchemy.Column("last_name", sqlalchemy.String,unique=True),
     sqlalchemy.Column("email", sqlalchemy.String,unique=True),
     sqlalchemy.Column("password", sqlalchemy.String),
+    sqlalchemy.Column("occupation", sqlalchemy.String),
+    sqlalchemy.Column("house_address", sqlalchemy.String),
+    sqlalchemy.Column("phone_number", sqlalchemy.String),
+    sqlalchemy.Column("profile_pics", sqlalchemy.String),
     # sqlalchemy.Column("date_created", default = _dt.datetime.utcnow),    
 )
 
@@ -221,17 +225,25 @@ async def login(userL: UserLogin):
     # return {"message":"Signin Successful"}
 
 class Profile(BaseModel):
-    name: str
     email: str
-    bio: str
+    occupation: str
+    house_address: str
+    phone_number: str
 
 class Profiles(BaseModel):
     email:str
 # #for profile page
-@app.put("/profile")
-async def create_profile(profile: Profile, profile_pic: UploadFile = File(...)):
-    await database.connect()
 
+@app.post("/uploadfile/")
+async def create_upload_file(file: UploadFile):
+    await database.connect()
+    file_upload = user.insert().values(profile_pics=file)
+    return {"filename": file_upload.filename}
+@app.put("/profile")
+async def create_profile(profile: Profile, profile_pic: UploadFile):
+    await database.connect()
+    profiles = user.select().where(Profile.email == user.c.email)
+    db_profiles_ = await database.fetch_one(profiles)
     return {"profile": profile, "profile_pic_filename": profile_pic.filename}
 @app.post("/profile")
 async def get_profiles(userP: Profiles):
@@ -242,7 +254,7 @@ async def get_profiles(userP: Profiles):
     # query = user.insert().values(email=userP.email)
     profiles = user.select().where(userP.email == user.c.email)
     db_profiles_ = await database.fetch_one(profiles)
-    return{"last_name": db_profiles_.last_name,"first_name": db_profiles_.first_name,"email": db_profiles_.email}
+    return{"last_name": db_profiles_.last_name,"first_name": db_profiles_.first_name,"email": db_profiles_.email,"occupation":db_profiles_.occupation,"house_address":db_profiles_.house_address,"phone_number":db_profiles_.phone_number,"diabetes-type":db_profiles_.diabetes_type}
 class PasswordResetRequest(BaseModel):
     email: str
 
