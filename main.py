@@ -21,16 +21,16 @@ import databases
 import starlette.responses as _responses
 import fastapi.security as _security
 from auth import AuthHandler
-import secrets
-from fastapi.staticfiles import StaticFiles
-from PIL import Image
+# import secrets
+# from fastapi.staticfiles import StaticFiles
+# from PIL import Image
 
 
 app = FastAPI()
 
 # _JWT_SECRET = ""
 
-app.mount("/static", StaticFiles(directory="static"), name="static") 
+# app.mount("/static", StaticFiles(directory="static"), name="static") 
 auth_handler = AuthHandler()
 
 
@@ -293,10 +293,6 @@ async def create_profile(profile: Profile, profile_pic: UploadFile):
 @app.post("/profile")
 async def get_profiles(userP: Profiles):
     await database.connect()
-    # db = SessionLocal()
-    # profiles = db.query(User.email,User.username,)
-    # db.close()
-    # query = user.insert().values(email=userP.email)
     profiles = user.select().where(userP.email == user.c.email)
     db_profiles_ = await database.fetch_one(profiles)
     return{"last_name": db_profiles_.last_name,"first_name": db_profiles_.first_name,"email": db_profiles_.email,"occupation":db_profiles_.occupation,"house_address":db_profiles_.house_address,"phone_number":db_profiles_.phone_number,"diabetes-type":db_profiles_.diabetes_type}
@@ -315,48 +311,22 @@ async def request_password_reset(request: PasswordResetRequest):
     # Retrieve user with matching email from database
     user_ = user.select().where(user.c.email == request.email)    
     db_user_ = await database.fetch_one(user_)
-    # db = SessionLocal()
-    # user = db.query(User).filter(User.email == request.email).first()
-    # db.close()
-
     if db_user_.c.email == request.email:
         # Send password reset email to the user's email address
         return {"message": "Password reset email sent"}
     else:
         return {"message": "User not found"}
 
-# @app.get("/users/")
-# async def list_users():
-#     # Retrieve all users from database
-#     db = SessionLocal()
-#     users = db.query(User).all()
-#     db.close()
-
-#     # Return list of UserOut objects
-#     return [UserOut(username=user.username, email=user.email, id=user.id) for user in users]
-
 @app.delete("/users/{user_email}")
 async def delete_user(user_email: str):
     await database.connect()
     user = user.delete().where(user_email.email == user.email)
-    # Delete user with given ID from database
-#     db = SessionLocal()
-#     user = db.query(User).filter(User.email == user_email).first()
-#     db.delete(user)
-#     db.commit()
-#     db.close()
-
     return {"message": "User deleted"}
 
 @app.post("/feedback")
 async def Feedback(feed_back: Feedbacks):
       await database.connect()
       db_feedback = feedback.insert().values(message1=feed_back.message1,message2=feed_back.message2,message3=feed_back.message3)
-    #   db = SessionLocal()
-    #   db_feedback = Feed(feed_back.email,feed_back.message1,feed_back.message2,feed_back.message3) 
-    #   db.add(db_feedback)
-    #   db.commit()
-    #   db.refresh(db_feedback)
       return {"message": "Thank you for your feedback!"}
 
 @app.post('/diabetes_prediction')
