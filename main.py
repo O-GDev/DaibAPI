@@ -101,11 +101,6 @@ engine = sqlalchemy.create_engine(
 )
 
 metadata.create_all(engine)
-# Set up the database connection
-# SQLALCHEMY_DATABASE_URL = 'postgresql://postgres:Gbogo321@localhost/Diabetes_db'
-# engine = create_engine(SQLALCHEMY_DATABASE_URL)
-# SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-# Base = declarative_base()
 
 origins = [
 "http://192.168.43.177:8000"
@@ -125,25 +120,6 @@ class model_input(BaseModel):
 
 def verify_password(self, password: str):
     return _hash.bycrypt.verify(password,self.hashed_password)
-# Define the User model
-# class User(Base):
-#     __tablename__ = "userss"
-#     id = Column(Integer, primary_key=True, index=True)
-#     username = Column(String, unique=True, index=True)
-#     email = Column(String, unique=True, index=True)
-#     password = Column(String)
-
-# class Feed(Base):
-#     __tablename__ = "feed"
-#     id = Column(Integer, primary_key=True, index=True)
-#     email = Column(String, unique=True, index=True)
-#     message1 = Column(String, index=True )
-#     message2 = Column(String, index=True )
-#     message3 = Column(String, index=True )
-
-    
-# Create the tables in the database
-# Base.metadata.create_all(bind=engine)
 
 # Define the request body schema
 class UserCreate(BaseModel):
