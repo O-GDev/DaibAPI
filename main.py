@@ -82,7 +82,7 @@ user = sqlalchemy.Table(
     sqlalchemy.Column("occupation", sqlalchemy.String),
     sqlalchemy.Column("house_address", sqlalchemy.String),
     sqlalchemy.Column("phone_number", sqlalchemy.String),
-    sqlalchemy.Column("profile_pics", sqlalchemy.String),
+    sqlalchemy.Column("profile_pics", sqlalchemy.String,),
     # sqlalchemy.Column("date_created", default = _dt.datetime.utcnow),    
 )
 
@@ -157,19 +157,6 @@ diabetes_model = pickle.load(open('diabetes_model.sav', 'rb'))
 async def root():
     # raise HTTPException(status_code=404, detail="page not found")
     return _responses.RedirectResponse("/docs")
-# @app.get("/")
-# async def root():
-  #  raise HTTPException(status_code=404, detail="page not found")
-   # return {}
-#for signup page
-# Define the signup endpoint
-# @app.on_event("startup")
-# async def startup():
-#     await database.connect()
-
-# @app.on_event("shutdown")
-# async def shutdown():
-#     await database.disconnect()
 @app.post("/signup")
 async def signup(userC: UserCreate):
     await database.connect()
@@ -208,59 +195,16 @@ class Profile(BaseModel):
     occupation: str
     house_address: str
     phone_number: str
-    image: str
+    # image: str
 
 class Profiles(BaseModel):
-    email:str
-# #for profile page
+    # email:str
+    image:str
+# @app.put("/profile")
+# async def update_profiles(profU: Profile):
+#     return{} occupation=profU.occupation,house_address=profU.house_address,phone_number=profU.phone_number
 
-# @app.post("/uploadfile/")
-# async def create_upload_file(file: UploadFile):
-#     await database.connect()
-#     return {"filename": file_upload.filename}
-# @app.post("/uploadfile/profile")
-# async def create_upload_file(userC: Profiles, file: UploadFile = File(...)):
-    # FILEPATH = "./static/images/"
-    # filename = file.filename
-    # extension = filename.split(".")[1]
-
-    # if extension not in ["PNG", "JPG"]:
-    #     return {"status":"error", "detail": "File extension not supported"}
-    
-    # token_name = secrets.token_hex(10)+"."+extension
-    # generated_name = FILEPATH + token_name
-    # file_content = await file.read()
-
-    # with open(generated_name, "wb") as file:
-    #     file.write(file_content)
-
-
-    # img = Image.open(generated_name)    
-    # img = img.resize(size =(200, 200))
-    # img.save(generated_name)
-
-    # file.close()
-
-    # db_user = user.select().where(user.c.email == userC.email)
-    # db_user_ = await database.fetch_one(db_user)
-
-    # if db_user:
-    #     profile_pics = token_name
-    #     await profile_pics.save()
-
-    # else:
-    #     raise HTTPException(
-    #         status_code=status.HTTP_401_UNAUTHORIZED,
-    #         detail="Not authorised to perform this action",
-    #         headers={"WWW-Athenticate": "Bearer"}
-    #     )    
-    # file_url = "https://diabetes-apis.herokuapp.com/" + generated_name[1:]
-    # return{"status": "ok", "filename": file}
-
-
-
-@app.put("/profile")
-async def create_profile(file: UploadFile): 
+async def handle_file_upload(file: UploadFile) -> str: 
     _, ext = os.path.splitext(file.filename)
     img_dir = os.path.join(BASEDIR, 'statics/media')
     if not os.path.exists(img_dir):
@@ -273,7 +217,21 @@ async def create_profile(file: UploadFile):
         await f.write(content)
 
     return file_name
-    # return {"size of the file":file.filename }
+
+@app.put("/profile_picture")
+async def update_profile(image: UploadFile = File(...)):
+    await database.connect()
+    # auth = user.select().where(u.email == user.email)
+    # if auth:
+    images = await handle_file_upload(image)
+    prof = user.insert().values(profile_pics = images)
+    db_prof_ = await database.fetch_one(prof)    
+    db_user = user.select().where(user.c.profile_pics == images)
+    db_user_ = await database.fetch_one(db_user)
+    return {db_user_}
+    # else:
+    #     return{}
+
 @app.post("/profile")
 async def get_profiles(userP: Profiles):
     await database.connect()
