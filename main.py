@@ -21,9 +21,16 @@ import databases
 import starlette.responses as _responses
 import fastapi.security as _security
 from auth import AuthHandler
+import secrets
+from fastapi.staticfiles import StaticFiles
+from PIL import Image
+
+
+app = FastAPI()
 
 # _JWT_SECRET = ""
 
+app.mount("/static", StaticFiles(directory="static"), name="static") 
 auth_handler = AuthHandler()
 
 
@@ -117,7 +124,6 @@ class model_input(BaseModel):
     DiabetesPedigreeFunction : float
     Age : int      
 
-
 def verify_password(self, password: str):
     return _hash.bycrypt.verify(password,self.hashed_password)
 # Define the User model
@@ -171,8 +177,6 @@ diabetes_model = pickle.load(open('diabetes_model.sav', 'rb'))
 
 # class PredictDiabetes(BaseModel):
 
-# Create the FastAPI app
-app = FastAPI()
 
 @app.get("/")
 async def root():
@@ -238,12 +242,53 @@ class Profiles(BaseModel):
 # async def create_upload_file(file: UploadFile):
 #     await database.connect()
 #     return {"filename": file_upload.filename}
+@app.post("/uploadfile/profile")
+async def create_upload_file(userC: Profiles, file: UploadFile = File(...)):
+    FILEPATH = "./static/images/"
+    filename = file.filename
+    extension = filename.split(".")[1]
+
+    if extension not in ["PNG", "JPG"]:
+        return {"status":"error", "detail": "File extension not supported"}
+    
+    token_name = secrets.token_hex(10)+"."+extension
+    generated_name = FILEPATH + token_name
+    file_content = await file.read()
+
+    with open(generated_name, "wb") as file:
+        file.write(file_content)
+
+
+    img = Image.open(generated_name)    
+    img = img.resize(size =(200, 200))
+    img.save(generated_name)
+
+    file.close()
+
+    db_user = user.select().where(user.c.email == userC.email)
+    # db_user_ = await database.fetch_one(db_user)
+
+    if db_user:
+        profile_pics = token_name
+        await profile_pics.save()
+
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authorised to perform this action",
+            headers={"WWW-Athenticate": "Bearer"}
+        )    
+    file_url = "https://diabetes-apis.herokuapp.com/" + generated_name[1:]
+    return{"status": "ok", "filename": file_url}
+
+
+
 @app.put("/profile")
 async def create_profile(profile: Profile, profile_pic: UploadFile):
     await database.connect()
-    file_upload = user.insert().values(profile_pics=profile_pic)
-    profiles = user.select().where(Profile.email == user.c.email)
-    db_profiles_ = await database.fetch_one(profiles)
+    # file_upload = user.insert().values(profile_pics=profile_pic)
+    # profiles = user.select().where(Profile.email == user.c.email)
+    # db_profiles_ = await database.fetch_one(profiles)
     return {"profile": profile, "profile_pic_filename": profile_pic.filename}
 @app.post("/profile")
 async def get_profiles(userP: Profiles):
