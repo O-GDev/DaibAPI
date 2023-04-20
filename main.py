@@ -23,9 +23,17 @@ import fastapi.security as _security
 from auth import AuthHandler
 import aiofiles
 import uuid
+from starlette.requests import Request
+from fastapi.templating import Jinja2Templates
+from sklearn.linear_model import LogisticRegression
+
 
 app = FastAPI()
-
+# templates = Jinja2Templates(directory="template")
+# the filename of the saved model
+# filename = 'diabetes_model.sav'
+# load the saved model
+# loaded_model = pickle.load(open(filename, 'rb'))
 # _JWT_SECRET = ""
 
 # app.mount("/static", StaticFiles(directory="static"), name="static") 
@@ -43,12 +51,13 @@ X = diabetes_dataset.drop(columns = 'Outcome', axis=1)
 
 Y = diabetes_dataset['Outcome']
 
-X_train, X_test, Y_train, Y_test = train_test_split(X,Y, test_size = 0.2, stratify=Y, random_state=2)
+X_train, X_test, Y_train, Y_test = train_test_split(X,Y, test_size = 0.2, stratify=Y, random_state=2,)
 
 # print(X.shape, X_train.shape, X_test.shape)
 
-classifier = svm.SVC(kernel='linear')
+classifier = svm.SVC(kernel='linear', probability=True)
 
+# classifier = LogisticRegression(probability=True)
 classifier.fit(X_train, Y_train)
 
 X_train_prediction = classifier.predict(X_train)
@@ -198,8 +207,8 @@ class Profile(BaseModel):
     # image: str
 
 class Profiles(BaseModel):
-    # email:str
-    image:str
+    email:str
+    # image:str
 # @app.put("/profile")
 # async def update_profiles(profU: Profile):
 #     return{} occupation=profU.occupation,house_address=profU.house_address,phone_number=profU.phone_number
@@ -218,19 +227,18 @@ async def handle_file_upload(file: UploadFile) -> str:
 
     return file_name
 
-@app.put("/profile_picture")
-async def update_profile(image: UploadFile = File(...)):
-    await database.connect()
-    # auth = user.select().where(u.email == user.email)
-    # if auth:
-    images = await handle_file_upload(image)
-    prof = user.insert().values(profile_pics = images)
-    db_prof_ = await database.fetch_one(prof)    
-    db_user = user.select().where(user.c.profile_pics == images)
+@app.patch("/profile_picture/{id}")
+async def update_profile(UserP:Profile,image: UploadFile = File(...)):
+    await database.connect()                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          
+    Images = await handle_file_upload(image)
+    # auth = await login(token)
+    prof = user.insert().values(profile_pics = Images,occupation = UserP.occupation,house_address = UserP.house_address,
+                                phone_number = UserP.phone_number).where(UserP.email == user.c.email)
+    # db_prof_ = await database.fetch_one(prof)    
+    db_user = user.select().where(UserP.email == user.c.email)
     db_user_ = await database.fetch_one(db_user)
-    return {db_user_}
-    # else:
-    #     return{}
+    return {db_user_.dict()}
+
 
 @app.post("/profile")
 async def get_profiles(userP: Profiles):
@@ -271,9 +279,40 @@ async def Feedback(feed_back: Feedbacks):
       db_feedback = feedback.insert().values(message1=feed_back.message1,message2=feed_back.message2,message3=feed_back.message3)
       return {"message": "Thank you for your feedback!"}
 
-@app.post('/diabetes_prediction')
-def diabetes_predd(input_parameters : model_input):
+# @app.post('/diabetes_prediction')
+# def diabetes_predd(input_parameters : model_input):
     
+#     input_data = input_parameters.json()
+#     input_dictionary = json.loads(input_data)
+    
+#     preg = input_dictionary['pregnancies']
+#     glu = input_dictionary['Glucose']
+#     bp = input_dictionary['BloodPressure']
+#     skin = input_dictionary['SkinThickness']
+#     insulin = input_dictionary['Insulin']
+#     bmi = input_dictionary['BMI']
+#     dpf = input_dictionary['DiabetesPedigreeFunction']
+#     age = input_dictionary['Age']
+    
+    
+#     input_list = [preg, glu, bp, skin, insulin, bmi, dpf, age]
+    
+#     prediction = diabetes_model.predict([input_list])
+    
+#     if (prediction == 0):
+#         return 'The person is not diabetic'
+#     else:
+#         return 'The person is diabetic'
+    # return{"message" : "successful"} 
+    
+
+@app.post('/predict')
+async def predict(input_parameters : model_input):
+    # result = {}
+    # if request.method == "POST":
+        # get the features to predict
+        # form = await request.form()
+        # form data
     input_data = input_parameters.json()
     input_dictionary = json.loads(input_data)
     
@@ -285,17 +324,27 @@ def diabetes_predd(input_parameters : model_input):
     bmi = input_dictionary['BMI']
     dpf = input_dictionary['DiabetesPedigreeFunction']
     age = input_dictionary['Age']
-    
-    
+
     input_list = [preg, glu, bp, skin, insulin, bmi, dpf, age]
     
     prediction = diabetes_model.predict([input_list])
+
+    confidence = diabetes_model.predict_proba([input_list])
     
-    if (prediction == 0):
+    result = np.amax(confidence[0])
+
+    res = (result * 100)
+     
+    resi = round(res, 2 ) 
+        
+    
+    if (prediction[0] == 0):
         return 'The person is not diabetic'
     else:
-        return 'The person is diabetic'
-    # return{"message" : "successful"} 
+        return {"message": resi}
+
+
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
