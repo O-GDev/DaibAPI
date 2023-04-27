@@ -55,7 +55,7 @@ X_train, X_test, Y_train, Y_test = train_test_split(X,Y, test_size = 0.2, strati
 
 # print(X.shape, X_train.shape, X_test.shape)
 
-classifier = svm.SVC(kernel='linear')
+classifier = svm.SVC(kernel='linear', probability=True)
 
 # classifier = LogisticRegression(probability=True)
 classifier.fit(X_train, Y_train)
@@ -370,9 +370,9 @@ async def predict(input_parameters : model_input):
         
     
     if (prediction[0] == 0):
-        return 'The person is not diabetic'
+        return {"message":"The person is not diabetic","status":"notit"}
     else:
-        return {"message": resi}
+        return {"message": resi,"status":"it"}
 
 
 
