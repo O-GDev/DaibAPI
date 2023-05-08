@@ -26,6 +26,9 @@ import uuid
 from starlette.requests import Request
 from fastapi.templating import Jinja2Templates
 from sklearn.linear_model import LogisticRegression
+import datetime
+import time
+import asyncio
 
 
 app = FastAPI()
@@ -95,6 +98,8 @@ user = sqlalchemy.Table(
     # sqlalchemy.Column("date_created", default = _dt.datetime.utcnow),    
 )
 
+
+
 feedback = sqlalchemy.Table(
     "feedback",
     metadata,
@@ -155,6 +160,9 @@ class Feedbacks(BaseModel):
     message2: str
     message3: str
 
+class Reminder(BaseModel):
+    date: str
+    message: str
 
 
 diabetes_model = pickle.load(open('diabetes_model.sav', 'rb'))
@@ -376,8 +384,25 @@ async def predict(input_parameters : model_input):
 
 
 
+@app.post('/reminder')
+async def Reminder(remind: Reminder):
+      today = datetime.datetime.today()
+      target = datetime.datetime.strptime(remind.date, "%d/%m/%Y %H:%M:%S") 
+      totalTime = target - today
+      seconds = totalTime.total_seconds()    
 
+      if target:        
+        def remind():
+          time.sleep(seconds)
+          return{"message":totalTime}
+        return{"massage":"Reminder set successfully"}
+      else:
+          return {"massage": "pick a valid date"}
+      
 
+      time.sleep(seconds)
+      return
+ 
 
 app.add_middleware(
     CORSMiddleware,
