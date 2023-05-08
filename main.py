@@ -261,11 +261,11 @@ async def request_password_reset(request: PasswordResetRequest):
     # Retrieve user with matching email from database
     user_ = user.select().where(user.c.email == request.email)    
     db_user_ = await database.fetch_one(user_)
-    if db_user_.c.email == request.email:
+    if db_user_ is None:
         # Send password reset email to the user's email address
-        return {"message": "Password reset email sent"}
-    else:
         return {"message": "User not found"}
+    else:
+        return {"message": "Password reset email sent"}
 
 @app.delete("/users/{user_email}")
 async def delete_user(user_email: str):
