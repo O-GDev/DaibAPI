@@ -74,7 +74,7 @@ test_data_accuracy = accuracy_score(X_test_prediction, Y_test)
 filename = 'diabetes_model.sav'
 pickle.dump(classifier, open(filename, 'wb'))
 
-DATABASE_URL = "postgresql://u46cfqbp4io1vd:p3b558fedcd0e00cda12000fda26d7192c2d2ad15b960ec45c295491ad07a6206@ec2-3-222-91-5.compute-1.amazonaws.com:5432/dacrinndo5iuu1"
+DATABASE_URL = "postgresql://biqxjsxynyhqin:2c11b52c42eb4e08c70ea9b178b9e1ae4996a0744e79bd6eed6df72dfadf50f8@ec2-107-21-67-46.compute-1.amazonaws.com:5432/d68l9na6c3l27c"
 database = databases.Database(DATABASE_URL)
 
 metadata = sqlalchemy.MetaData()
