@@ -390,19 +390,10 @@ async def Reminder(remind: Reminder):
       target = datetime.datetime.strptime(remind.date, "%d/%m/%Y %H:%M:%S") 
       totalTime = target - today
       seconds = totalTime.total_seconds()    
-
-      if target:        
-        def remind():
-          time.sleep(seconds)
-          return{"message":totalTime}
-        return{"massage":"Reminder set successfully"}
-      else:
-          return {"massage": "pick a valid date"}
-      
-
       time.sleep(seconds)
-      return
- 
+      return{"message":"Wake up!, Time don reach "}
+
+
 
 app.add_middleware(
     CORSMiddleware,
