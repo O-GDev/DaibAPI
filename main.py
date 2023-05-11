@@ -110,6 +110,15 @@ feedback = sqlalchemy.Table(
     sqlalchemy.Column("message3", sqlalchemy.String),
 )
 
+Remind = sqlalchemy.Table(
+    "Remind",
+    metadata,
+    sqlalchemy.Column("id", sqlalchemy.Integer, primary_key=True),
+    sqlalchemy.Column("setdate", sqlalchemy.String),
+    sqlalchemy.Column("message", sqlalchemy.String),
+    # sqlalchemy.Column("message3", sqlalchemy.String),
+)
+
 engine = sqlalchemy.create_engine(
     DATABASE_URL
 )
@@ -163,6 +172,7 @@ class Feedbacks(BaseModel):
 class Reminder(BaseModel):
     date: str
     message: str
+    email: str
 
 
 diabetes_model = pickle.load(open('diabetes_model.sav', 'rb'))
@@ -172,7 +182,7 @@ diabetes_model = pickle.load(open('diabetes_model.sav', 'rb'))
 
 @app.get("/")
 async def root():
-    # raise HTTPException(status_code=404, detail="page not found")
+    raise HTTPException(status_code=404, detail="page not found")
     return _responses.RedirectResponse("/docs")
 @app.post("/signup")
 async def signup(userC: UserCreate):
@@ -384,16 +394,11 @@ async def predict(input_parameters : model_input):
 
 
 
-@app.post('/reminder')
-async def Reminder(remind: Reminder):
-      today = datetime.datetime.today()
-      target = datetime.datetime.strptime(remind.date, "%d/%m/%Y %H:%M:%S") 
-      totalTime = target - today
-      seconds = totalTime.total_seconds()    
-      time.sleep(seconds)
-      return{"message":"Wake up!, Time don reach "}
+        
 
 
+
+      
 
 app.add_middleware(
     CORSMiddleware,
