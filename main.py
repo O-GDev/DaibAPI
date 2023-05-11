@@ -210,8 +210,9 @@ async def login(userL: UserLogin):
     if db_user_ is None or not auth_handler.verify_password(userL.password, db_user_.password):
         raise HTTPException(status_code=401, detail="invalid email or password")
     else:
+        last_record_id = await database.execute(db_user)
         token = auth_handler.encode_token(db_user_.email)
-        return{"message":"Signin Successful","status":"ok", "token": token }
+        return{"status":"ok", "token": token, "id": last_record_id, **userL.dict()}
     
     # Return the user
     # return{db_user_.password,userL.password}
