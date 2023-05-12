@@ -29,6 +29,8 @@ from sklearn.linear_model import LogisticRegression
 import datetime
 import time
 import asyncio
+import json as js
+from starlette.staticfiles import StaticFiles
 
 
 app = FastAPI()
@@ -43,6 +45,7 @@ app = FastAPI()
 auth_handler = AuthHandler()
 BASEDIR = os.path.dirname(__file__)
 
+app.mount("/statics", StaticFiles(directory=BASEDIR + "/statics"), name="statics")
 
 
 diabetes_dataset = pd.read_csv('diabetes.csv') 
@@ -253,7 +256,7 @@ async def update_profile(UserP:Profile,image: UploadFile = File(...)):
     await database.connect()
     Images = await handle_file_upload(image)
     # auth = await login(token)
-    prof = user.insert().values(profile_pics = Images,occupation = UserP.occupation,house_address = UserP.house_address,
+    user.insert().values(profile_pics = Images,occupation = UserP.occupation,house_address = UserP.house_address,
                                 phone_number = UserP.phone_number).where(UserP.email == user.c.email)
     # db_prof_ = await database.fetch_one(prof)    
     db_user = user.select().where(UserP.email == user.c.email)
