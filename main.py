@@ -29,8 +29,8 @@ from sklearn.linear_model import LogisticRegression
 import datetime
 import time
 import asyncio
-import json as js
-from starlette.staticfiles import StaticFiles
+# import json as js
+# from starlette.staticfiles import StaticFiles
 
 
 app = FastAPI()
@@ -45,7 +45,7 @@ app = FastAPI()
 auth_handler = AuthHandler()
 BASEDIR = os.path.dirname(__file__)
 
-app.mount("/statics", StaticFiles(directory=BASEDIR + "/statics"), name="statics")
+# app.mount("/statics", StaticFiles(directory=BASEDIR + "/statics"), name="statics")
 
 
 diabetes_dataset = pd.read_csv('diabetes.csv') 
