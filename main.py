@@ -182,7 +182,7 @@ diabetes_model = pickle.load(open('diabetes_model.sav', 'rb'))
 
 @app.get("/")
 async def root():
-    raise HTTPException(status_code=404, detail="page not found")
+    # raise HTTPException(status_code=404, detail="page not found")
     return _responses.RedirectResponse("/docs")
 @app.post("/signup")
 async def signup(userC: UserCreate):
@@ -245,7 +245,9 @@ async def handle_file_upload(file: UploadFile) -> str:
         await f.write(content)
 
     return file_name
-
+# https://youtu.be/UNFDILca9M8
+# https://www.youtube.com/watch?v=aFtYsghw-1k
+# https://youtu.be/1GpOS5mrGHI
 @app.patch("/profile_picture/{id}")
 async def update_profile(UserP:Profile,image: UploadFile = File(...)):
     await database.connect()
