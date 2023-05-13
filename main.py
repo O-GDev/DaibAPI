@@ -187,14 +187,14 @@ diabetes_model = pickle.load(open('diabetes_model.sav', 'rb'))
 async def root():
     # raise HTTPException(status_code=404, detail="page not found")
     return _responses.RedirectResponse("/docs")
-# @app.on_event("startup")
-# async def startup():
-#     await database.connect()
+@app.on_event("startup")
+async def startup():
+    await database.connect()
 
 
-# @app.on_event("shutdown")
-# async def shutdown():
-#     await database.disconnect()
+@app.on_event("shutdown")
+async def shutdown():
+    await database.disconnect()
 @app.post("/signup")
 async def signup(userC: UserCreate):
     # await database.connect()
@@ -259,17 +259,17 @@ async def handle_file_upload(file: UploadFile) -> str:
 # https://youtu.be/UNFDILca9M8
 # https://www.youtube.com/watch?v=aFtYsghw-1k
 # https://youtu.be/1GpOS5mrGHI
-@app.patch("/profile_picture/{id}")
-async def update_profile(UserP:Profile,image: UploadFile = File(...)):
-    # await database.connect()
-    Images = await handle_file_upload(image)
-    # auth = await login(token)
-    user.insert().values(profile_pics = Images,occupation = UserP.occupation,house_address = UserP.house_address,
-                                phone_number = UserP.phone_number).where(UserP.email == user.c.email)
-    # db_prof_ = await database.fetch_one(prof)    
-    db_user = user.select().where(UserP.email == user.c.email)
-    db_user_ = await database.fetch_one(db_user)
-    return {db_user_.dict()}
+# @app.patch("/profile_picture/{id}")
+# async def update_profile(UserP:Profile,image: UploadFile = File(...)):
+#     # await database.connect()
+#     Images = await handle_file_upload(image)
+#     # auth = await login(token)
+#     user.insert().values(profile_pics = Images,occupation = UserP.occupation,house_address = UserP.house_address,
+#                                 phone_number = UserP.phone_number).where(UserP.email == user.c.email)
+#     # db_prof_ = await database.fetch_one(prof)    
+#     db_user = user.select().where(UserP.email == user.c.email)
+#     db_user_ = await database.fetch_one(db_user)
+#     return {db_user_.dict()}
 
 
 @app.post("/profile")
@@ -369,42 +369,42 @@ async def Feedback(feed_back: Feedbacks):
 #         return 'The person is not diabetic'
 #     else:
 #         return {"message": result}
-@app.post('/predict')
-async def predict(input_parameters : model_input):
-    # result = {}
-    # if request.method == "POST":
-        # get the features to predict
-        # form = await request.form()
-        # form data
-    input_data = input_parameters.json()
-    input_dictionary = json.loads(input_data)
+# @app.post('/predict')
+# async def predict(input_parameters : model_input):
+#     # result = {}
+#     # if request.method == "POST":
+#         # get the features to predict
+#         # form = await request.form()
+#         # form data
+#     input_data = input_parameters.json()
+#     input_dictionary = json.loads(input_data)
     
-    preg = input_dictionary['pregnancies']
-    glu = input_dictionary['Glucose']
-    bp = input_dictionary['BloodPressure']
-    skin = input_dictionary['SkinThickness']
-    insulin = input_dictionary['Insulin']
-    bmi = input_dictionary['BMI']
-    dpf = input_dictionary['DiabetesPedigreeFunction']
-    age = input_dictionary['Age']
+#     preg = input_dictionary['pregnancies']
+#     glu = input_dictionary['Glucose']
+#     bp = input_dictionary['BloodPressure']
+#     skin = input_dictionary['SkinThickness']
+#     insulin = input_dictionary['Insulin']
+#     bmi = input_dictionary['BMI']
+#     dpf = input_dictionary['DiabetesPedigreeFunction']
+#     age = input_dictionary['Age']
 
-    input_list = [preg, glu, bp, skin, insulin, bmi, dpf, age]
+#     input_list = [preg, glu, bp, skin, insulin, bmi, dpf, age]
     
-    prediction = diabetes_model.predict([input_list])
+#     prediction = diabetes_model.predict([input_list])
 
-    confidence = diabetes_model.predict_proba([input_list])
+#     confidence = diabetes_model.predict_proba([input_list])
     
-    result = np.amax(confidence[0])
+#     result = np.amax(confidence[0])
 
-    res = (result * 100)
+#     res = (result * 100)
      
-    resi = round(res, 2 ) 
+#     resi = round(res, 2 ) 
         
     
-    if (prediction[0] == 0):
-        return {"message":"The person is not diabetic","status":"notit"}
-    else:
-        return {"message": resi,"status":"it"}
+#     if (prediction[0] == 0):
+#         return {"message":"The person is not diabetic","status":"notit"}
+#     else:
+#         return {"message": resi,"status":"it"}
 
 
 
