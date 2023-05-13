@@ -187,14 +187,14 @@ diabetes_model = pickle.load(open('diabetes_model.sav', 'rb'))
 async def root():
     # raise HTTPException(status_code=404, detail="page not found")
     return _responses.RedirectResponse("/docs")
-# @app.on_event("startup")
-# async def startup():
-#     await database.connect()
+@app.on_event("startup")
+async def startup():
+    await database.connect()
 
 
-# @app.on_event("shutdown")
-# async def shutdown():
-#     await database.disconnect()
+@app.on_event("shutdown")
+async def shutdown():
+    await database.disconnect()
 @app.post("/signup")
 async def signup(userC: UserCreate):
     # await database.connect()
