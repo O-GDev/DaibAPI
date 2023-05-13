@@ -45,7 +45,7 @@ app = FastAPI()
 auth_handler = AuthHandler()
 BASEDIR = os.path.dirname(__file__)
 
-app.mount("/statics", StaticFiles(directory=BASEDIR + "/statics"), name="statics")
+# app.mount("/statics", StaticFiles(directory=BASEDIR + "/statics"), name="statics")
 
 
 diabetes_dataset = pd.read_csv('diabetes.csv') 
@@ -113,18 +113,12 @@ feedback = sqlalchemy.Table(
     sqlalchemy.Column("message3", sqlalchemy.String),
 )
 
-Remind = sqlalchemy.Table(
-    "Remind",
-    metadata,
-    sqlalchemy.Column("id", sqlalchemy.Integer, primary_key=True),
-    sqlalchemy.Column("setdate", sqlalchemy.String),
-    sqlalchemy.Column("message", sqlalchemy.String),
-    # sqlalchemy.Column("message3", sqlalchemy.String),
-)
+
 
 engine = sqlalchemy.create_engine(
-    DATABASE_URL
+    DATABASE_URL,
 )
+metadata = sqlalchemy.MetaData()
 
 metadata.create_all(engine)
 
@@ -187,14 +181,18 @@ diabetes_model = pickle.load(open('diabetes_model.sav', 'rb'))
 async def root():
     # raise HTTPException(status_code=404, detail="page not found")
     return _responses.RedirectResponse("/docs")
-# @app.on_event("startup")
-# async def startup():
-#     await database.connect()
 
 
-# @app.on_event("shutdown")
-# async def shutdown():
-#     await database.disconnect()
+@app.on_event("startup")
+async def startup():
+    await database.connect()
+
+
+@app.on_event("shutdown")
+async def shutdown():
+    await database.disconnect()
+
+
 @app.post("/signup")
 async def signup(userC: UserCreate):
     # await database.connect()
@@ -259,17 +257,19 @@ async def handle_file_upload(file: UploadFile) -> str:
 # https://youtu.be/UNFDILca9M8
 # https://www.youtube.com/watch?v=aFtYsghw-1k
 # https://youtu.be/1GpOS5mrGHI
-# @app.patch("/profile_picture/{id}")
-# async def update_profile(UserP:Profile,image: UploadFile = File(...)):
-#     # await database.connect()
-#     Images = await handle_file_upload(image)
-#     # auth = await login(token)
-#     user.insert().values(profile_pics = Images,occupation = UserP.occupation,house_address = UserP.house_address,
-#                                 phone_number = UserP.phone_number).where(UserP.email == user.c.email)
-#     # db_prof_ = await database.fetch_one(prof)    
-#     db_user = user.select().where(UserP.email == user.c.email)
-#     db_user_ = await database.fetch_one(db_user)
-#     return {db_user_.dict()}
+
+
+@app.patch("/profile_picture/{id}")
+async def update_profile(UserP:Profile,image: UploadFile = File(...)):
+    # await database.connect()
+    Images = await handle_file_upload(image)
+    # auth = await login(token)
+    user.insert().values(profile_pics = Images,occupation = UserP.occupation,house_address = UserP.house_address,
+                                phone_number = UserP.phone_number).where(UserP.email == user.c.email)
+    # db_prof_ = await database.fetch_one(prof)    
+    db_user = user.select().where(UserP.email == user.c.email)
+    db_user_ = await database.fetch_one(db_user)
+    return {db_user_.dict()}
 
 
 @app.post("/profile")
@@ -278,6 +278,7 @@ async def get_profiles(userP: Profiles):
     profiles = user.select().where(userP.email == user.c.email)
     db_profiles_ = await database.fetch_one(profiles)
     return{"last_name": db_profiles_.last_name,"first_name": db_profiles_.first_name,"email": db_profiles_.email,"occupation":db_profiles_.occupation,"house_address":db_profiles_.house_address,"phone_number":db_profiles_.phone_number,"diabetes-type":db_profiles_.diabetes_type}
+
 class PasswordResetRequest(BaseModel):
     email: str
 
@@ -409,11 +410,7 @@ async def predict(input_parameters : model_input):
 
 
 
-        
-
-
-
-      
+             
 
 app.add_middleware(
     CORSMiddleware,
