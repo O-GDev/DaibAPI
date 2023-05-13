@@ -369,42 +369,43 @@ async def Feedback(feed_back: Feedbacks):
 #         return 'The person is not diabetic'
 #     else:
 #         return {"message": result}
-# @app.post('/predict')
-# async def predict(input_parameters : model_input):
-#     # result = {}
-#     # if request.method == "POST":
-#         # get the features to predict
-#         # form = await request.form()
-#         # form data
-#     input_data = input_parameters.json()
-#     input_dictionary = json.loads(input_data)
-    
-#     preg = input_dictionary['pregnancies']
-#     glu = input_dictionary['Glucose']
-#     bp = input_dictionary['BloodPressure']
-#     skin = input_dictionary['SkinThickness']
-#     insulin = input_dictionary['Insulin']
-#     bmi = input_dictionary['BMI']
-#     dpf = input_dictionary['DiabetesPedigreeFunction']
-#     age = input_dictionary['Age']
 
-#     input_list = [preg, glu, bp, skin, insulin, bmi, dpf, age]
+@app.post('/predict')
+async def predict(input_parameters : model_input):
+    # result = {}
+    # if request.method == "POST":
+        # get the features to predict
+        # form = await request.form()
+        # form data
+    input_data = input_parameters.json()
+    input_dictionary = json.loads(input_data)
     
-#     prediction = diabetes_model.predict([input_list])
+    preg = input_dictionary['pregnancies']
+    glu = input_dictionary['Glucose']
+    bp = input_dictionary['BloodPressure']
+    skin = input_dictionary['SkinThickness']
+    insulin = input_dictionary['Insulin']
+    bmi = input_dictionary['BMI']
+    dpf = input_dictionary['DiabetesPedigreeFunction']
+    age = input_dictionary['Age']
 
-#     confidence = diabetes_model.predict_proba([input_list])
+    input_list = [preg, glu, bp, skin, insulin, bmi, dpf, age]
     
-#     result = np.amax(confidence[0])
+    prediction = diabetes_model.predict([input_list])
 
-#     res = (result * 100)
+    confidence = diabetes_model.predict_proba([input_list])
+    
+    result = np.amax(confidence[0])
+
+    res = (result * 100)
      
-#     resi = round(res, 2 ) 
+    resi = round(res, 2 ) 
         
     
-#     if (prediction[0] == 0):
-#         return {"message":"The person is not diabetic","status":"notit"}
-#     else:
-#         return {"message": resi,"status":"it"}
+    if (prediction[0] == 0):
+        return {"message":"The person is not diabetic","status":"notit"}
+    else:
+        return {"message": resi,"status":"it"}
 
 
 
