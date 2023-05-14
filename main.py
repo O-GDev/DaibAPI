@@ -1,5 +1,4 @@
 from fastapi import FastAPI ,HTTPException ,File, UploadFile,status
-from pydantic import BaseModel
 from sqlalchemy import create_engine, Column, Integer, String, Boolean, false
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
@@ -31,6 +30,7 @@ import time
 import asyncio
 import json as js
 from starlette.staticfiles import StaticFiles
+import schemas
 
 
 app = FastAPI()
@@ -118,6 +118,7 @@ feedback = sqlalchemy.Table(
 engine = sqlalchemy.create_engine(
     DATABASE_URL,
 )
+Base = declarative_base()
 metadata = sqlalchemy.MetaData()
 
 metadata.create_all(engine)
@@ -127,49 +128,13 @@ origins = [
 ]
 
 
-class model_input(BaseModel):
     
-    pregnancies : int
-    Glucose : int
-    BloodPressure : int
-    SkinThickness : int
-    Insulin : int
-    BMI : float
-    DiabetesPedigreeFunction : float
-    Age : int      
 
 def verify_password(self, password: str):
     return _hash.bycrypt.verify(password,self.hashed_password)
 
 # Define the request body schema
-class UserCreate(BaseModel):
-    first_name: str
-    last_name:str
-    email: str
-    password: str
 
-class UserCreates(BaseModel):
-    id: int
-    first_name:str
-    last_name:str
-    email: str
-    password: str
- 
-
-class UserLogin(BaseModel):
-    email: str
-    password: str
-
-class Feedbacks(BaseModel):
-    email: str
-    message1: str
-    message2: str
-    message3: str
-
-class Reminder(BaseModel):
-    date: str
-    message: str
-    email: str
 
 
 diabetes_model = pickle.load(open('diabetes_model.sav', 'rb'))
@@ -183,18 +148,18 @@ async def root():
     return _responses.RedirectResponse("/docs")
 
 
-# @app.on_event("startup")
-# async def startup():
-#     await database.connect()
+@app.on_event("startup")
+async def startup():
+    await database.connect()
 
 
-# @app.on_event("shutdown")
-# async def shutdown():
-#     await database.disconnect()
+@app.on_event("shutdown")
+async def shutdown():
+    await database.disconnect()
 
 
 @app.post("/signup")
-async def signup(userC: UserCreate):
+async def signup(userC: schemas.UserCreate):
     await database.connect()
     db_user_create = user.select().where(user.c.email == userC.email or user.c.first_name == userC.first_name or user.c.last_name == userC.last_name)
     db_user_create_ = await database.fetch_one(db_user_create)
@@ -208,8 +173,8 @@ async def signup(userC: UserCreate):
         raise HTTPException(status_code=400, detail="user already exist") 
    
 # #for login page
-@app.post("/login")
-async def login(userL: UserLogin):
+@app.post("/login",response_model=schemas.UserLoginResponse)
+async def login(userL: schemas.UserLogin):
     await database.connect()
     # Get the user from the database by email
     db_user = user.select().where(user.c.email == userL.email)
@@ -227,15 +192,7 @@ async def login(userL: UserLogin):
     # return{db_user_.password,userL.password}
     # return {"message":"Signin Successful"}
 
-class Profile(BaseModel):
-    email: str
-    occupation: str
-    house_address: str
-    phone_number: str
-    # image: str
 
-class Profiles(BaseModel):
-    email:str
     # image:str
 # @app.put("/profile")
 # async def update_profiles(profU: Profile):
@@ -260,7 +217,7 @@ async def handle_file_upload(file: UploadFile) -> str:
 
 
 @app.patch("/profile_picture/{id}")
-async def update_profile(UserP:Profile,image: UploadFile = File(...)):
+async def update_profile(UserP:schemas.Profile,image: UploadFile = File(...)):
     await database.connect()
     Images = await handle_file_upload(image)
     # auth = await login(token)
@@ -273,23 +230,18 @@ async def update_profile(UserP:Profile,image: UploadFile = File(...)):
 
 
 @app.post("/profile")
-async def get_profiles(userP: Profiles):
+async def get_profiles(userP: schemas.Profiles):
     await database.connect()
     profiles = user.select().where(userP.email == user.c.email)
     db_profiles_ = await database.fetch_one(profiles)
     return{"last_name": db_profiles_.last_name,"first_name": db_profiles_.first_name,"email": db_profiles_.email,"occupation":db_profiles_.occupation,"house_address":db_profiles_.house_address,"phone_number":db_profiles_.phone_number,"diabetes-type":db_profiles_.diabetes_type}
 
-class PasswordResetRequest(BaseModel):
-    email: str
 
-class UserOut(BaseModel):
-    username: str
-    email: str
 
 # password_reset_requests = []
 
 @app.get("/forgot-password")
-async def request_password_reset(request: PasswordResetRequest):
+async def request_password_reset(request: schemas.PasswordResetRequest):
     await database.connect()
     # Retrieve user with matching email from database
     user_ = user.select().where(user.c.email == request.email)    
@@ -302,12 +254,12 @@ async def request_password_reset(request: PasswordResetRequest):
 
 @app.delete("/users/{user_email}")
 async def delete_user(user_email: str):
-    await database.connect()
+    # await database.connect()
     user = user.delete().where(user_email.email == user.email)
     return {"message": "User deleted"}
 
 @app.post("/feedback")
-async def Feedback(feed_back: Feedbacks):
+async def Feedback(feed_back: schemas.Feedbacks):
     #   await database.connect()
       db_feedback = feedback.insert().values(message1=feed_back.message1,message2=feed_back.message2,message3=feed_back.message3)
       return {"message": "Thank you for your feedback!"}
@@ -372,7 +324,7 @@ async def Feedback(feed_back: Feedbacks):
 #         return {"message": result}
 
 @app.post('/predict')
-async def predict(input_parameters : model_input):
+async def predict(input_parameters : schemas.model_input):
     # result = {}
     # if request.method == "POST":
         # get the features to predict
@@ -419,3 +371,4 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 ) 
+# web: gunicorn -w 4 -k uvicorn.workers.UvicornWorker main:app
