@@ -195,7 +195,7 @@ async def root():
 
 @app.post("/signup")
 async def signup(userC: UserCreate):
-    # await database.connect()
+    await database.connect()
     db_user_create = user.select().where(user.c.email == userC.email or user.c.first_name == userC.first_name or user.c.last_name == userC.last_name)
     db_user_create_ = await database.fetch_one(db_user_create)
     if db_user_create_ is None:
@@ -210,7 +210,7 @@ async def signup(userC: UserCreate):
 # #for login page
 @app.post("/login")
 async def login(userL: UserLogin):
-    # await database.connect()
+    await database.connect()
     # Get the user from the database by email
     db_user = user.select().where(user.c.email == userL.email)
     db_user_ = await database.fetch_one(db_user)
@@ -261,7 +261,7 @@ async def handle_file_upload(file: UploadFile) -> str:
 
 @app.patch("/profile_picture/{id}")
 async def update_profile(UserP:Profile,image: UploadFile = File(...)):
-    # await database.connect()
+    await database.connect()
     Images = await handle_file_upload(image)
     # auth = await login(token)
     user.insert().values(profile_pics = Images,occupation = UserP.occupation,house_address = UserP.house_address,
@@ -274,7 +274,7 @@ async def update_profile(UserP:Profile,image: UploadFile = File(...)):
 
 @app.post("/profile")
 async def get_profiles(userP: Profiles):
-    # await database.connect()
+    await database.connect()
     profiles = user.select().where(userP.email == user.c.email)
     db_profiles_ = await database.fetch_one(profiles)
     return{"last_name": db_profiles_.last_name,"first_name": db_profiles_.first_name,"email": db_profiles_.email,"occupation":db_profiles_.occupation,"house_address":db_profiles_.house_address,"phone_number":db_profiles_.phone_number,"diabetes-type":db_profiles_.diabetes_type}
@@ -290,7 +290,7 @@ class UserOut(BaseModel):
 
 @app.get("/forgot-password")
 async def request_password_reset(request: PasswordResetRequest):
-    # await database.connect()
+    await database.connect()
     # Retrieve user with matching email from database
     user_ = user.select().where(user.c.email == request.email)    
     db_user_ = await database.fetch_one(user_)
@@ -302,7 +302,7 @@ async def request_password_reset(request: PasswordResetRequest):
 
 @app.delete("/users/{user_email}")
 async def delete_user(user_email: str):
-    # await database.connect()
+    await database.connect()
     user = user.delete().where(user_email.email == user.email)
     return {"message": "User deleted"}
 
