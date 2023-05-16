@@ -1,6 +1,5 @@
-from fastapi import FastAPI ,HTTPException ,File, UploadFile,status
+from fastapi import FastAPI ,HTTPException ,File, UploadFile,status, Depends
 from sqlalchemy import create_engine, Column, Integer, String, Boolean, false
-from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 # from passlib.hash import bcrypt
 import passlib.hash as _hash
@@ -31,6 +30,9 @@ import asyncio
 import json as js
 from starlette.staticfiles import StaticFiles
 import schemas
+import models
+from .database import engine, get_db, SessionLocal 
+from sqlalchemy.orm import Session
 
 
 app = FastAPI()
@@ -80,48 +82,48 @@ test_data_accuracy = accuracy_score(X_test_prediction, Y_test)
 filename = 'diabetes_model.sav'
 pickle.dump(classifier, open(filename, 'wb'))
 
-DATABASE_URL = "postgresql://biqxjsxynyhqin:2c11b52c42eb4e08c70ea9b178b9e1ae4996a0744e79bd6eed6df72dfadf50f8@ec2-107-21-67-46.compute-1.amazonaws.com:5432/d68l9na6c3l27c"
-database = databases.Database(DATABASE_URL)
+# DATABASE_URL = "postgresql://biqxjsxynyhqin:2c11b52c42eb4e08c70ea9b178b9e1ae4996a0744e79bd6eed6df72dfadf50f8@ec2-107-21-67-46.compute-1.amazonaws.com:5432/d68l9na6c3l27c"
+# database = databases.Database(DATABASE_URL)
 
-metadata = sqlalchemy.MetaData()
-
-
-user = sqlalchemy.Table(
-    "user",
-    metadata,
-    sqlalchemy.Column("id", sqlalchemy.Integer, primary_key=True),
-    sqlalchemy.Column("first_name", sqlalchemy.String,unique=True),
-    sqlalchemy.Column("last_name", sqlalchemy.String,unique=True),
-    sqlalchemy.Column("email", sqlalchemy.String,unique=True),
-    sqlalchemy.Column("password", sqlalchemy.String),
-    sqlalchemy.Column("occupation", sqlalchemy.String),
-    sqlalchemy.Column("house_address", sqlalchemy.String),
-    sqlalchemy.Column("phone_number", sqlalchemy.String),
-    sqlalchemy.Column("profile_pics", sqlalchemy.String,),
-    # sqlalchemy.Column("date_created", default = _dt.datetime.utcnow),    
-)
+# metadata = sqlalchemy.MetaData()
 
 
-
-feedback = sqlalchemy.Table(
-    "feedback",
-    metadata,
-    sqlalchemy.Column("id", sqlalchemy.Integer, primary_key=True),
-    sqlalchemy.Column("email", sqlalchemy.String),
-    sqlalchemy.Column("message1", sqlalchemy.String),
-    sqlalchemy.Column("message2", sqlalchemy.String),
-    sqlalchemy.Column("message3", sqlalchemy.String),
-)
+# user = sqlalchemy.Table(
+#     "user",
+#     metadata,
+#     sqlalchemy.Column("id", sqlalchemy.Integer, primary_key=True),
+#     sqlalchemy.Column("first_name", sqlalchemy.String,unique=True),
+#     sqlalchemy.Column("last_name", sqlalchemy.String,unique=True),
+#     sqlalchemy.Column("email", sqlalchemy.String,unique=True),
+#     sqlalchemy.Column("password", sqlalchemy.String),
+#     sqlalchemy.Column("occupation", sqlalchemy.String),
+#     sqlalchemy.Column("house_address", sqlalchemy.String),
+#     sqlalchemy.Column("phone_number", sqlalchemy.String),
+#     sqlalchemy.Column("profile_pics", sqlalchemy.String,),
+#     # sqlalchemy.Column("date_created", default = _dt.datetime.utcnow),    
+# )
 
 
 
-engine = sqlalchemy.create_engine(
-    DATABASE_URL,
-)
-Base = declarative_base()
-metadata = sqlalchemy.MetaData()
+# feedback = sqlalchemy.Table(
+#     "feedback",
+#     metadata,
+#     sqlalchemy.Column("id", sqlalchemy.Integer, primary_key=True),
+#     sqlalchemy.Column("email", sqlalchemy.String),
+#     sqlalchemy.Column("message1", sqlalchemy.String),
+#     sqlalchemy.Column("message2", sqlalchemy.String),
+#     sqlalchemy.Column("message3", sqlalchemy.String),
+# )
 
-metadata.create_all(engine)
+
+
+# engine = sqlalchemy.create_engine(
+#     DATABASE_URL,
+# )
+# Base = declarative_base()
+# metadata = sqlalchemy.MetaData()
+
+# metadata.create_all(engine)
 
 origins = [
 "http://192.168.43.177:8000"
@@ -157,143 +159,191 @@ async def root():
 # async def shutdown():
 #     await database.disconnect()
 
-
 @app.post("/signup")
-async def signup(userC: schemas.UserCreate):
-    await database.connect()
-    db_user_create = user.select().where(user.c.email == userC.email or user.c.first_name == userC.first_name or user.c.last_name == userC.last_name)
-    db_user_create_ = await database.fetch_one(db_user_create)
-    if db_user_create_ is None:
+async def signup(userC: schemas.UserCreate,db: Session = Depends(get_db)):
+    db_user_create =  db.query(models.User).filter(userC.first_name == models.User.first_name,userC.last_name == models.User.last_name,userC.email == models.User.email)
+    # db_user_create_ = await database.fetch_one(db_user_create)
+    if db_user_create is None:
         hashed_password = auth_handler.get_password_hash(userC.password)
-        query = user.insert().values(first_name=userC.first_name, last_name=userC.last_name, email=userC.email, password=hashed_password)
-        last_record_id = await database.execute(query)
-        token = auth_handler.encode_token(userC.email)
-        return {**userC.dict(), "id": last_record_id, "status":'ok', "token": token}
+        query = models.User(first_name = userC.first_name,last_name = userC.last_name,email = userC.email,password = hashed_password)
+        db.add(query)
+        db.commit()
+        db.refresh(query)
+        return query
+        # token = auth_handler.encode_token(userC.email)
+        # return {**userC.dict(),}
     else:
         raise HTTPException(status_code=400, detail="user already exist") 
    
-# #for login page
-@app.post("/login",response_model=schemas.UserLoginResponse)
-async def login(userL: schemas.UserLogin):
-    await database.connect()
-    # Get the user from the database by email
-    db_user = user.select().where(user.c.email == userL.email)
-    db_user_ = await database.fetch_one(db_user)
-    
-    # if db_user_ is None or db_user_.password != userL.password :
-    if db_user_ is None or not auth_handler.verify_password(userL.password, db_user_.password):
-        raise HTTPException(status_code=401, detail="invalid email or password")
-    else:
-        last_record_id = await database.execute(db_user)
-        token = auth_handler.encode_token(db_user_.email)
-        return{"status":"ok", "token": token, "id": last_record_id, **userL.dict()}
-    
-    # Return the user
-    # return{db_user_.password,userL.password}
-    # return {"message":"Signin Successful"}
 
-
-    # image:str
-# @app.put("/profile")
-# async def update_profiles(profU: Profile):
-#     return{} occupation=profU.occupation,house_address=profU.house_address,phone_number=profU.phone_number
-
-async def handle_file_upload(file: UploadFile) -> str: 
-    _, ext = os.path.splitext(file.filename)
-    img_dir = os.path.join(BASEDIR, 'statics/media')
-    if not os.path.exists(img_dir):
-        os.makedirs(img_dir)
-    content = await file.read()
-    if file.content_type not in ['image/jpeg', 'image/png']:
-        raise HTTPException(status_code=406, detail="Only .jpeg or .png  files allowed")
-    file_name = f'{uuid.uuid4().hex}{ext}'
-    async with aiofiles.open(os.path.join(img_dir, file_name), mode='wb') as f:
-        await f.write(content)
-
-    return file_name
-# https://youtu.be/UNFDILca9M8
-# https://www.youtube.com/watch?v=aFtYsghw-1k
-# https://youtu.be/1GpOS5mrGHI
-
-
-@app.patch("/profile_picture/{id}")
-async def update_profile(UserP:schemas.Profile,image: UploadFile = File(...)):
-    await database.connect()
-    Images = await handle_file_upload(image)
-    # auth = await login(token)
-    user.insert().values(profile_pics = Images,occupation = UserP.occupation,house_address = UserP.house_address,
-                                phone_number = UserP.phone_number).where(UserP.email == user.c.email)
-    # db_prof_ = await database.fetch_one(prof)    
-    db_user = user.select().where(UserP.email == user.c.email)
-    db_user_ = await database.fetch_one(db_user)
-    return {db_user_.dict()}
-
-
-@app.post("/profile")
-async def get_profiles(userP: schemas.Profiles):
-    await database.connect()
-    profiles = user.select().where(userP.email == user.c.email)
-    db_profiles_ = await database.fetch_one(profiles)
-    return{"last_name": db_profiles_.last_name,"first_name": db_profiles_.first_name,"email": db_profiles_.email,"occupation":db_profiles_.occupation,"house_address":db_profiles_.house_address,"phone_number":db_profiles_.phone_number,"diabetes-type":db_profiles_.diabetes_type}
-
-
-
-# password_reset_requests = []
-
-@app.get("/forgot-password")
-async def request_password_reset(request: schemas.PasswordResetRequest):
-    await database.connect()
-    # Retrieve user with matching email from database
-    user_ = user.select().where(user.c.email == request.email)    
-    db_user_ = await database.fetch_one(user_)
-    if db_user_ is None:
-        # Send password reset email to the user's email address
-        return {"message": "User not found"}
-    else:
-        return {"message": "Password reset email sent"}
-
-@app.delete("/users/{user_email}")
-async def delete_user(user_email: str):
-    # await database.connect()
-    user = user.delete().where(user_email.email == user.email)
-    return {"message": "User deleted"}
-
-@app.post("/feedback")
-async def Feedback(feed_back: schemas.Feedbacks):
-    #   await database.connect()
-      db_feedback = feedback.insert().values(message1=feed_back.message1,message2=feed_back.message2,message3=feed_back.message3)
-      return {"message": "Thank you for your feedback!"}
-
-# @app.post('/diabetes_prediction')
-# def diabetes_predd(input_parameters : model_input):
-    
-#     input_data = input_parameters.json()
-#     input_dictionary = json.loads(input_data)
-    
-#     preg = input_dictionary['pregnancies']
-#     glu = input_dictionary['Glucose']
-#     bp = input_dictionary['BloodPressure']
-#     skin = input_dictionary['SkinThickness']
-#     insulin = input_dictionary['Insulin']
-#     bmi = input_dictionary['BMI']
-#     dpf = input_dictionary['DiabetesPedigreeFunction']
-#     age = input_dictionary['Age']
-    
-    
-#     input_list = [preg, glu, bp, skin, insulin, bmi, dpf, age]
-    
-#     prediction = diabetes_model.predict([input_list])
-    
-#     if (prediction == 0):
-#         return 'The person is not diabetic'
+# @app.post("/signup")
+# async def signup(userC: schemas.UserCreate):
+#     await database.connect()
+#     db_user_create = user.select().where(user.c.email == userC.email or user.c.first_name == userC.first_name or user.c.last_name == userC.last_name)
+#     db_user_create_ = await database.fetch_one(db_user_create)
+#     if db_user_create_ is None:
+#         hashed_password = auth_handler.get_password_hash(userC.password)
+#         query = user.insert().values(first_name=userC.first_name, last_name=userC.last_name, email=userC.email, password=hashed_password)
+#         last_record_id = await database.execute(query)
+#         token = auth_handler.encode_token(userC.email)
+#         return {**userC.dict(), "id": last_record_id, "status":'ok', "token": token}
 #     else:
-#         return 'The person is diabetic'
-    # return{"message" : "successful"} 
+#         raise HTTPException(status_code=400, detail="user already exist") 
+   
+# # #for login page
+# @app.post("/login",response_model=schemas.UserLoginResponse)
+# async def login(userL: schemas.UserLogin):
+#     await database.connect()
+#     # Get the user from the database by email
+#     db_user = user.select().where(user.c.email == userL.email)
+#     db_user_ = await database.fetch_one(db_user)
     
+#     # if db_user_ is None or db_user_.password != userL.password :
+#     if db_user_ is None or not auth_handler.verify_password(userL.password, db_user_.password):
+#         raise HTTPException(status_code=401, detail="invalid email or password")
+#     else:
+#         last_record_id = await database.execute(db_user)
+#         token = auth_handler.encode_token(db_user_.email)
+#         return{"status":"ok", "token": token, "id": last_record_id, **userL.dict()}
+    
+#     # Return the user
+#     # return{db_user_.password,userL.password}
+#     # return {"message":"Signin Successful"}
+
+
+#     # image:str
+# # @app.put("/profile")
+# # async def update_profiles(profU: Profile):
+# #     return{} occupation=profU.occupation,house_address=profU.house_address,phone_number=profU.phone_number
+
+# async def handle_file_upload(file: UploadFile) -> str: 
+#     _, ext = os.path.splitext(file.filename)
+#     img_dir = os.path.join(BASEDIR, 'statics/media')
+#     if not os.path.exists(img_dir):
+#         os.makedirs(img_dir)
+#     content = await file.read()
+#     if file.content_type not in ['image/jpeg', 'image/png']:
+#         raise HTTPException(status_code=406, detail="Only .jpeg or .png  files allowed")
+#     file_name = f'{uuid.uuid4().hex}{ext}'
+#     async with aiofiles.open(os.path.join(img_dir, file_name), mode='wb') as f:
+#         await f.write(content)
+
+#     return file_name
+# # https://youtu.be/UNFDILca9M8
+# # https://www.youtube.com/watch?v=aFtYsghw-1k
+# # https://youtu.be/1GpOS5mrGHI
+
+
+# @app.patch("/profile_picture/{id}")
+# async def update_profile(UserP:schemas.Profile,image: UploadFile = File(...)):
+#     await database.connect()
+#     Images = await handle_file_upload(image)
+#     # auth = await login(token)
+#     user.insert().values(profile_pics = Images,occupation = UserP.occupation,house_address = UserP.house_address,
+#                                 phone_number = UserP.phone_number).where(UserP.email == user.c.email)
+#     # db_prof_ = await database.fetch_one(prof)    
+#     db_user = user.select().where(UserP.email == user.c.email)
+#     db_user_ = await database.fetch_one(db_user)
+#     return {db_user_.dict()}
+
+
+# @app.post("/profile")
+# async def get_profiles(userP: schemas.Profiles):
+#     await database.connect()
+#     profiles = user.select().where(userP.email == user.c.email)
+#     db_profiles_ = await database.fetch_one(profiles)
+#     return{"last_name": db_profiles_.last_name,"first_name": db_profiles_.first_name,"email": db_profiles_.email,"occupation":db_profiles_.occupation,"house_address":db_profiles_.house_address,"phone_number":db_profiles_.phone_number,"diabetes-type":db_profiles_.diabetes_type}
+
+
+
+# # password_reset_requests = []
+
+# @app.get("/forgot-password")
+# async def request_password_reset(request: schemas.PasswordResetRequest):
+#     await database.connect()
+#     # Retrieve user with matching email from database
+#     user_ = user.select().where(user.c.email == request.email)    
+#     db_user_ = await database.fetch_one(user_)
+#     if db_user_ is None:
+#         # Send password reset email to the user's email address
+#         return {"message": "User not found"}
+#     else:
+#         return {"message": "Password reset email sent"}
+
+# @app.delete("/users/{user_email}")
+# async def delete_user(user_email: str):
+#     # await database.connect()
+#     user = user.delete().where(user_email.email == user.email)
+#     return {"message": "User deleted"}
+
+# @app.post("/feedback")
+# async def Feedback(feed_back: schemas.Feedbacks):
+#     #   await database.connect()
+#       db_feedback = feedback.insert().values(message1=feed_back.message1,message2=feed_back.message2,message3=feed_back.message3)
+#       return {"message": "Thank you for your feedback!"}
+
+# # @app.post('/diabetes_prediction')
+# # def diabetes_predd(input_parameters : model_input):
+    
+# #     input_data = input_parameters.json()
+# #     input_dictionary = json.loads(input_data)
+    
+# #     preg = input_dictionary['pregnancies']
+# #     glu = input_dictionary['Glucose']
+# #     bp = input_dictionary['BloodPressure']
+# #     skin = input_dictionary['SkinThickness']
+# #     insulin = input_dictionary['Insulin']
+# #     bmi = input_dictionary['BMI']
+# #     dpf = input_dictionary['DiabetesPedigreeFunction']
+# #     age = input_dictionary['Age']
+    
+    
+# #     input_list = [preg, glu, bp, skin, insulin, bmi, dpf, age]
+    
+# #     prediction = diabetes_model.predict([input_list])
+    
+# #     if (prediction == 0):
+# #         return 'The person is not diabetic'
+# #     else:
+# #         return 'The person is diabetic'
+#     # return{"message" : "successful"} 
+    
+
+# # @app.post('/predict')
+# # async def predict(input_parameters : model_input):
+# #     result = {}
+# #     # if request.method == "POST":
+# #         # get the features to predict
+# #         # form = await request.form()
+# #         # form data
+# #     input_data = input_parameters.json()
+# #     input_dictionary = json.loads(input_data)
+    
+# #     preg = input_dictionary['pregnancies']
+# #     glu = input_dictionary['Glucose']
+# #     bp = input_dictionary['BloodPressure']
+# #     skin = input_dictionary['SkinThickness']
+# #     insulin = input_dictionary['Insulin']
+# #     bmi = input_dictionary['BMI']
+# #     dpf = input_dictionary['DiabetesPedigreeFunction']
+# #     age = input_dictionary['Age']
+
+# #     input_list = [preg, glu, bp, skin, insulin, bmi, dpf, age]
+    
+# #     prediction = diabetes_model.predict([input_list])
+
+# #     confidence = diabetes_model.predict_proba([input_list])
+# #     result['confidence'] = str(round(np.amax(confidence[0]) * 100 ,2))
+        
+    
+# #     if (prediction[0] == 0):
+# #         return 'The person is not diabetic'
+# #     else:
+# #         return {"message": result}
 
 # @app.post('/predict')
-# async def predict(input_parameters : model_input):
-#     result = {}
+# async def predict(input_parameters : schemas.model_input):
+#     # result = {}
 #     # if request.method == "POST":
 #         # get the features to predict
 #         # form = await request.form()
@@ -315,50 +365,18 @@ async def Feedback(feed_back: schemas.Feedbacks):
 #     prediction = diabetes_model.predict([input_list])
 
 #     confidence = diabetes_model.predict_proba([input_list])
-#     result['confidence'] = str(round(np.amax(confidence[0]) * 100 ,2))
+    
+#     result = np.amax(confidence[0])
+
+#     res = (result * 100)
+     
+#     resi = round(res, 2 ) 
         
     
 #     if (prediction[0] == 0):
-#         return 'The person is not diabetic'
+#         return {"message":"The person is not diabetic","status":"notit"}
 #     else:
-#         return {"message": result}
-
-@app.post('/predict')
-async def predict(input_parameters : schemas.model_input):
-    # result = {}
-    # if request.method == "POST":
-        # get the features to predict
-        # form = await request.form()
-        # form data
-    input_data = input_parameters.json()
-    input_dictionary = json.loads(input_data)
-    
-    preg = input_dictionary['pregnancies']
-    glu = input_dictionary['Glucose']
-    bp = input_dictionary['BloodPressure']
-    skin = input_dictionary['SkinThickness']
-    insulin = input_dictionary['Insulin']
-    bmi = input_dictionary['BMI']
-    dpf = input_dictionary['DiabetesPedigreeFunction']
-    age = input_dictionary['Age']
-
-    input_list = [preg, glu, bp, skin, insulin, bmi, dpf, age]
-    
-    prediction = diabetes_model.predict([input_list])
-
-    confidence = diabetes_model.predict_proba([input_list])
-    
-    result = np.amax(confidence[0])
-
-    res = (result * 100)
-     
-    resi = round(res, 2 ) 
-        
-    
-    if (prediction[0] == 0):
-        return {"message":"The person is not diabetic","status":"notit"}
-    else:
-        return {"message": resi,"status":"it"}
+#         return {"message": resi,"status":"it"}
 
 
 
