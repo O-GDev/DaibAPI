@@ -177,6 +177,25 @@ async def signup(userC: schemas.UserCreate,db: Session = Depends(get_db)):
     else:
         raise HTTPException(status_code=400, detail="user already exist") 
    
+# #for login page
+@app.post("/login",response_model=schemas.UserLoginResponse,)
+async def login(userL: schemas.UserLogin,db: Session = Depends(get_db)):
+    # Get the user from the database by email
+    db_user_ =  db.query(models.User).filter(userL.first_name == models.User.first_name,userL.last_name == models.User.last_name,userL.email == models.User.email)
+    
+
+    
+    # if db_user_ is None or db_user_.password != userL.password :
+    if db_user_ is None or not auth_handler.verify_password(userL.password, db_user_.password):
+        raise HTTPException(status_code=401, detail="invalid email or password")
+    else:
+        token = auth_handler.encode_token(db_user_.email)
+        return{"status":"ok",**userL.dict()}
+    
+    # Return the user
+    # return{db_user_.password,userL.password}
+#     # return {"message":"Signin Successful"}
+
 
 # @app.post("/signup")
 # async def signup(userC: schemas.UserCreate):
@@ -343,42 +362,42 @@ async def signup(userC: schemas.UserCreate,db: Session = Depends(get_db)):
 # #     else:
 # #         return {"message": result}
 
-# @app.post('/predict')
-# async def predict(input_parameters : schemas.model_input):
-#     # result = {}
-#     # if request.method == "POST":
-#         # get the features to predict
-#         # form = await request.form()
-#         # form data
-#     input_data = input_parameters.json()
-#     input_dictionary = json.loads(input_data)
+@app.post('/predict')
+async def predict(input_parameters : schemas.model_input):
+    # result = {}
+    # if request.method == "POST":
+        # get the features to predict
+        # form = await request.form()
+        # form data
+    input_data = input_parameters.json()
+    input_dictionary = json.loads(input_data)
     
-#     preg = input_dictionary['pregnancies']
-#     glu = input_dictionary['Glucose']
-#     bp = input_dictionary['BloodPressure']
-#     skin = input_dictionary['SkinThickness']
-#     insulin = input_dictionary['Insulin']
-#     bmi = input_dictionary['BMI']
-#     dpf = input_dictionary['DiabetesPedigreeFunction']
-#     age = input_dictionary['Age']
+    preg = input_dictionary['pregnancies']
+    glu = input_dictionary['Glucose']
+    bp = input_dictionary['BloodPressure']
+    skin = input_dictionary['SkinThickness']
+    insulin = input_dictionary['Insulin']
+    bmi = input_dictionary['BMI']
+    dpf = input_dictionary['DiabetesPedigreeFunction']
+    age = input_dictionary['Age']
 
-#     input_list = [preg, glu, bp, skin, insulin, bmi, dpf, age]
+    input_list = [preg, glu, bp, skin, insulin, bmi, dpf, age]
     
-#     prediction = diabetes_model.predict([input_list])
+    prediction = diabetes_model.predict([input_list])
 
-#     confidence = diabetes_model.predict_proba([input_list])
+    confidence = diabetes_model.predict_proba([input_list])
     
-#     result = np.amax(confidence[0])
+    result = np.amax(confidence[0])
 
-#     res = (result * 100)
+    res = (result * 100)
      
-#     resi = round(res, 2 ) 
+    resi = round(res, 2 ) 
         
     
-#     if (prediction[0] == 0):
-#         return {"message":"The person is not diabetic","status":"notit"}
-#     else:
-#         return {"message": resi,"status":"it"}
+    if (prediction[0] == 0):
+        return {"message":"The person is not diabetic","status":"notit"}
+    else:
+        return {"message": resi,"status":"it"}
 
 
 
