@@ -31,10 +31,12 @@ import json as js
 from starlette.staticfiles import StaticFiles
 import schemas
 import models
-from .database import engine, get_db, SessionLocal 
+from database import engine, get_db, SessionLocal 
 from sqlalchemy.orm import Session
 
 
+
+models.Base.metadata.create_all(bind=engine)
 app = FastAPI()
 # templates = Jinja2Templates(directory="template")
 # the filename of the saved model
