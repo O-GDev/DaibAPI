@@ -232,10 +232,76 @@ async def Feedback(feed_back: schemas.Feedbacks,db: Session = Depends(get_db)):
     db.commit()
     db.refresh(query)
     return {"message":"Thanks for the feedback"}
-    #   db_feedback = feedback.insert().values(message1=feed_back.message1,message2=feed_back.message2,message3=feed_back.message3)
-#       return {"message": "Thank you for your feedback!"}
 
 
+@app.post('/predict')
+async def predict(input_parameters : schemas.model_input):
+    # result = {}
+    # if request.method == "POST":
+        # get the features to predict
+        # form = await request.form()
+        # form data
+    input_data = input_parameters.json()
+    input_dictionary = json.loads(input_data)
+    
+    preg = input_dictionary['pregnancies']
+    glu = input_dictionary['Glucose']
+    bp = input_dictionary['BloodPressure']
+    skin = input_dictionary['SkinThickness']
+    insulin = input_dictionary['Insulin']
+    bmi = input_dictionary['BMI']
+    dpf = input_dictionary['DiabetesPedigreeFunction']
+    age = input_dictionary['Age']
+
+    input_list = [preg, glu, bp, skin, insulin, bmi, dpf, age]
+    
+    prediction = diabetes_model.predict([input_list])
+
+    confidence = diabetes_model.predict_proba([input_list])
+    
+    result = np.amax(confidence[0])
+
+    res = (result * 100)
+     
+    resi = round(res, 2 ) 
+        
+    
+    if (prediction[0] == 0):
+        return {"message":"The person is not diabetic","status":"notit"}
+    else:
+        return {"message": resi,"status":"it"}
+
+
+@app.post("/profile")
+async def get_profiles(userP: schemas.Profiles,db: Session = Depends(get_db)):
+    db_profiles_ =  db.query(models.User).filter(userP.email == models.User.email)
+    return{"last_name": db_profiles_.last_name,"first_name": db_profiles_.first_name,"email": db_profiles_.email,"occupation":db_profiles_.occupation,"house_address":db_profiles_.house_address,"phone_number":db_profiles_.phone_number,"diabetes-type":db_profiles_.diabetes_type}
+
+@app.get("/forgot-password")
+async def request_password_reset(request: schemas.PasswordResetRequest,db: Session = Depends(get_db)):
+    # Retrieve user with matching email from database
+    user_ = db.query(models.User).filter(request.email == models.User.email)
+    if user_ is None:
+        # Send password reset email to the user's email address
+        return {"message": "User not found"}
+    else:
+        return {"message": "Password reset email sent"}
+
+@app.delete("/users/{user_email}")
+async def delete_user(user_email: str,db: Session = Depends(get_db)):
+    
+    user = db.query(models.User).filter(user_email == models.User.email)
+
+    if user.first() == None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
+                            detail=f"user {user_email} does not exist") 
+    else:
+        user.delete(synchronize_session=False)
+        db.commit
+        return {"message": "User deleted",}
+
+
+             
 # @app.post("/signup")
 # async def signup(userC: schemas.UserCreate):
 #     await database.connect()
@@ -401,46 +467,6 @@ async def Feedback(feed_back: schemas.Feedbacks,db: Session = Depends(get_db)):
 # #     else:
 # #         return {"message": result}
 
-@app.post('/predict')
-async def predict(input_parameters : schemas.model_input):
-    # result = {}
-    # if request.method == "POST":
-        # get the features to predict
-        # form = await request.form()
-        # form data
-    input_data = input_parameters.json()
-    input_dictionary = json.loads(input_data)
-    
-    preg = input_dictionary['pregnancies']
-    glu = input_dictionary['Glucose']
-    bp = input_dictionary['BloodPressure']
-    skin = input_dictionary['SkinThickness']
-    insulin = input_dictionary['Insulin']
-    bmi = input_dictionary['BMI']
-    dpf = input_dictionary['DiabetesPedigreeFunction']
-    age = input_dictionary['Age']
-
-    input_list = [preg, glu, bp, skin, insulin, bmi, dpf, age]
-    
-    prediction = diabetes_model.predict([input_list])
-
-    confidence = diabetes_model.predict_proba([input_list])
-    
-    result = np.amax(confidence[0])
-
-    res = (result * 100)
-     
-    resi = round(res, 2 ) 
-        
-    
-    if (prediction[0] == 0):
-        return {"message":"The person is not diabetic","status":"notit"}
-    else:
-        return {"message": resi,"status":"it"}
-
-
-
-             
 
 app.add_middleware(
     CORSMiddleware,
