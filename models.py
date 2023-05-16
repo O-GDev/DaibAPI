@@ -19,7 +19,7 @@ class User(Base):
 class Feedback(Base):
     __tablename__ = "feedback"
     id = Column(Integer, primary_key=True, index=True)
-    email = Column(String, unique=True, index=True)
+    # email = Column(String, unique=True, index=True)
     message1 = Column(String, index=True )
     message2 = Column(String, index=True )
     message3 = Column(String, index=True )

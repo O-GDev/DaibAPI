@@ -196,6 +196,45 @@ async def login(userL: schemas.UserLogin,db: Session = Depends(get_db)):
     # return{db_user_.password,userL.password}
 #     # return {"message":"Signin Successful"}
 
+async def handle_file_upload(file: UploadFile) -> str: 
+    _, ext = os.path.splitext(file.filename)
+    img_dir = os.path.join(BASEDIR, 'statics/media')
+    if not os.path.exists(img_dir):
+        os.makedirs(img_dir)
+    content = await file.read()
+    if file.content_type not in ['image/jpeg', 'image/png']:
+        raise HTTPException(status_code=406, detail="Only .jpeg or .png  files allowed")
+    file_name = f'{uuid.uuid4().hex}{ext}'
+    async with aiofiles.open(os.path.join(img_dir, file_name), mode='wb') as f:
+        await f.write(content)
+
+    return file_name
+
+@app.patch("/profile_picture/{id}")
+async def update_profile(UserP:schemas.Profile,image: UploadFile = File(...),db: Session = Depends(get_db)):
+    Images = await handle_file_upload(image)
+
+    query = models.User(profile_pics = Images,occupation = UserP.occupation,house_address = UserP.house_address,
+                        phone_number = UserP.phone_number)
+    db.add(query)
+    db.commit()
+    db.refresh(query)
+        # return query
+    db_user_ =  db.query(models.User).filter(UserP.email == models.User.email)
+    return {db_user_.dict()}
+
+
+@app.post("/feedback")
+async def Feedback(feed_back: schemas.Feedbacks,db: Session = Depends(get_db)):
+    #   await database.connect()
+    query = models.Feedback(message1 = feed_back.message1,message2 = feed_back. message2,message3 = feed_back.message3)
+    db.add(query)
+    db.commit()
+    db.refresh(query)
+    return {"message":"Thanks for the feedback"}
+    #   db_feedback = feedback.insert().values(message1=feed_back.message1,message2=feed_back.message2,message3=feed_back.message3)
+#       return {"message": "Thank you for your feedback!"}
+
 
 # @app.post("/signup")
 # async def signup(userC: schemas.UserCreate):
