@@ -151,7 +151,7 @@ async def root():
     # raise HTTPException(status_code=404, detail="page not found")
     return _responses.RedirectResponse("/docs")
 
-@app.post("/signup")
+@app.post("/signup",response_model=schemas.UserResponse)
 async def signup(userC:schemas.UserCreate,db: Session = Depends(get_db)):
     db_user_create =  db.query(models.User).filter(userC.first_name == models.User.first_name,userC.last_name == models.User.last_name,userC.email == models.User.email)
     # db_user_create_ = await database.fetch_one(db_user_create)
