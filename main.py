@@ -29,10 +29,10 @@ import time
 import asyncio
 import json as js
 from starlette.staticfiles import StaticFiles
-import schemas
-import models
+import schemas, models, oauth2
 from database import engine, get_db, SessionLocal 
 from sqlalchemy.orm import Session
+from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 
 
 
@@ -151,18 +151,8 @@ async def root():
     # raise HTTPException(status_code=404, detail="page not found")
     return _responses.RedirectResponse("/docs")
 
-
-# @app.on_event("startup")
-# async def startup():
-#     await database.connect()
-
-
-# @app.on_event("shutdown")
-# async def shutdown():
-#     await database.disconnect()
-
 @app.post("/signup")
-async def signup(userC: schemas.UserCreate,db: Session = Depends(get_db)):
+async def signup(userC:schemas.UserCreate,db: Session = Depends(get_db)):
     db_user_create =  db.query(models.User).filter(userC.first_name == models.User.first_name,userC.last_name == models.User.last_name,userC.email == models.User.email)
     # db_user_create_ = await database.fetch_one(db_user_create)
     if db_user_create is None:
@@ -176,10 +166,10 @@ async def signup(userC: schemas.UserCreate,db: Session = Depends(get_db)):
         # return {**userC.dict(),}
     else:
         raise HTTPException(status_code=400, detail="user already exist") 
-   
+
 # #for login page
-@app.post("/login",response_model=schemas.UserLoginResponse,)
-async def login(userL: schemas.UserLogin,db: Session = Depends(get_db)):
+@app.post("/login",response_model=schemas.Token,)
+async def login(userL: OAuth2PasswordRequestForm = Depends(),db: Session = Depends(get_db)):
     # Get the user from the database by email
     db_user_ =  db.query(models.User).filter(userL.first_name == models.User.first_name,userL.last_name == models.User.last_name,userL.email == models.User.email)
     
@@ -189,7 +179,8 @@ async def login(userL: schemas.UserLogin,db: Session = Depends(get_db)):
     if db_user_ is None or not auth_handler.verify_password(userL.password, db_user_.password):
         raise HTTPException(status_code=401, detail="invalid email or password")
     else:
-        token = auth_handler.encode_token(db_user_.email)
+        # token = auth_handler.encode_token(db_user_.email)
+        access_token = oauth2.create_access_token(data={"user_id": db_user_.id})
         return{"status":"ok",**userL.dict()}
     
     # Return the user
@@ -211,7 +202,7 @@ async def handle_file_upload(file: UploadFile) -> str:
     return file_name
 
 @app.patch("/profile_picture/{id}")
-async def update_profile(UserP:schemas.Profile,image: UploadFile = File(...),db: Session = Depends(get_db)):
+async def update_profile(UserP:schemas.Profile,image: UploadFile = File(...),db: Session = Depends(get_db),get_current_user: int = Depends(oauth2.get_current_user)):
     Images = await handle_file_upload(image)
 
     query = models.User(profile_pics = Images,occupation = UserP.occupation,house_address = UserP.house_address,
@@ -225,7 +216,7 @@ async def update_profile(UserP:schemas.Profile,image: UploadFile = File(...),db:
 
 
 @app.post("/feedback")
-async def Feedback(feed_back: schemas.Feedbacks,db: Session = Depends(get_db)):
+async def Feedback(feed_back: schemas.Feedbacks,db: Session = Depends(get_db),get_current_user: int = Depends(oauth2.get_current_user)):
     #   await database.connect()
     query = models.Feedback(message1 = feed_back.message1,message2 = feed_back. message2,message3 = feed_back.message3)
     db.add(query)
@@ -235,7 +226,7 @@ async def Feedback(feed_back: schemas.Feedbacks,db: Session = Depends(get_db)):
 
 
 @app.post('/predict')
-async def predict(input_parameters : schemas.model_input):
+async def predict(input_parameters : schemas.model_input,get_current_user: int = Depends(oauth2.get_current_user)):
     # result = {}
     # if request.method == "POST":
         # get the features to predict
@@ -273,12 +264,12 @@ async def predict(input_parameters : schemas.model_input):
 
 
 @app.post("/profile")
-async def get_profiles(userP: schemas.Profiles,db: Session = Depends(get_db)):
+async def get_profiles(userP: schemas.Profiles,db: Session = Depends(get_db),get_current_user: int = Depends(oauth2.get_current_user)):
     db_profiles_ =  db.query(models.User).filter(userP.email == models.User.email)
     return{"last_name": db_profiles_.last_name,"first_name": db_profiles_.first_name,"email": db_profiles_.email,"occupation":db_profiles_.occupation,"house_address":db_profiles_.house_address,"phone_number":db_profiles_.phone_number,"diabetes-type":db_profiles_.diabetes_type}
 
 @app.get("/forgot-password")
-async def request_password_reset(request: schemas.PasswordResetRequest,db: Session = Depends(get_db)):
+async def request_password_reset(request: schemas.PasswordResetRequest,db: Session = Depends(get_db),get_current_user: int = Depends(oauth2.get_current_user)):
     # Retrieve user with matching email from database
     user_ = db.query(models.User).filter(request.email == models.User.email)
     if user_ is None:
@@ -288,7 +279,7 @@ async def request_password_reset(request: schemas.PasswordResetRequest,db: Sessi
         return {"message": "Password reset email sent"}
 
 @app.delete("/users/{user_email}")
-async def delete_user(user_email: str,db: Session = Depends(get_db)):
+async def delete_user(user_email: str,db: Session = Depends(get_db),get_current_user: int = Depends(oauth2.get_current_user)):
     
     user = db.query(models.User).filter(user_email == models.User.email)
 
