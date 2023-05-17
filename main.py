@@ -162,7 +162,7 @@ async def signup(userC:schemas.UserCreate,db: Session = Depends(get_db)):
         db.add(query)
         db.commit()
         db.refresh(query)
-        return query                 
+        return {query}                 
     else:
         raise HTTPException(status_code=400, detail="user already exist")
         
@@ -183,7 +183,7 @@ async def login(userL: OAuth2PasswordRequestForm = Depends(),db: Session = Depen
     else:
         # token = auth_handler.encode_token(db_user_.email)
         access_token = oauth2.create_access_token(data={"user_id": db_user_.id})
-        return db_user_
+        return {"access_token": access_token, "token_type":"bearer"}
     
     # Return the user
     # return{db_user_.password,userL.password}
