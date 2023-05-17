@@ -183,7 +183,7 @@ async def login(userL: OAuth2PasswordRequestForm = Depends(),db: Session = Depen
     else:
         # token = auth_handler.encode_token(db_user_.email)
         access_token = oauth2.create_access_token(data={"user_id": db_user_.id})
-        return{"status":"ok",**userL.dict()}
+        return db_user_
     
     # Return the user
     # return{db_user_.password,userL.password}
