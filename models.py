@@ -1,7 +1,7 @@
 from database import Base
 from sqlalchemy import Column, Integer, String
-from sqlalchemy.sql.expression import null
-
+from sqlalchemy.sql.expression import null, text
+from sqlalchemy.sql.sqltypes import TIMESTAMP
 
 class User(Base):
     __tablename__ = "users"
@@ -14,6 +14,7 @@ class User(Base):
     house_address = Column(String, unique=True, index=True, nullable = False)
     phone_number = Column(String, unique=True, index=True, nullable = False)
     profile_pics = Column(String, unique=True, index=True, nullable = False)
+    created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
 
 
 class Feedback(Base):
@@ -23,3 +24,4 @@ class Feedback(Base):
     message1 = Column(String, index=True )
     message2 = Column(String, index=True )
     message3 = Column(String, index=True )
+    created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))

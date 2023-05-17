@@ -154,7 +154,7 @@ async def root():
 
 @app.post("/signup",response_model=schemas.UserResponse)
 async def signup(userC:schemas.UserCreate,db: Session = Depends(get_db)):
-    db_user_create =  db.query(models.User).filter(userC.first_name == models.User.first_name,userC.last_name == models.User.last_name,userC.email == models.User.email)
+    db_user_create =  db.query(models.User).filter(userC.first_name == models.User.first_name,userC.last_name == models.User.last_name,userC.email == models.User.email).first()
     # db_user_create_ = await database.fetch_one(db_user_create)
     if db_user_create:        
         raise HTTPException(status_code=400, detail="user already exist") 
@@ -164,9 +164,9 @@ async def signup(userC:schemas.UserCreate,db: Session = Depends(get_db)):
         db.add(query)
         db.commit()
         db.refresh(query)
-        # return query
-        # token = auth_handler.encode_token(userC.email)
-        return {**userC.dict(),}
+        return query
+    # token = auth_handler.encode_token(userC.email)
+    # return {**userC.dict(),}
 
 # #for login page
 @app.post("/login",response_model=schemas.Token,)
