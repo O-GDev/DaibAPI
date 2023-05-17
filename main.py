@@ -162,7 +162,7 @@ async def signup(userC:schemas.UserCreate,db: Session = Depends(get_db)):
         hashed_password = auth_handler.get_password_hash(userC.password)
         query = models.User(first_name = userC.first_name,last_name = userC.last_name,email = userC.email,password = hashed_password)
         db.add(query)
-        db.commit()
+        db.commit(query)
         db.refresh(query)
         return query
     # token = auth_handler.encode_token(userC.email)
