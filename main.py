@@ -36,6 +36,7 @@ from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 
 
 
+
 models.Base.metadata.create_all(bind=engine)
 app = FastAPI()
 # templates = Jinja2Templates(directory="template")
@@ -155,7 +156,9 @@ async def root():
 async def signup(userC:schemas.UserCreate,db: Session = Depends(get_db)):
     db_user_create =  db.query(models.User).filter(userC.first_name == models.User.first_name,userC.last_name == models.User.last_name,userC.email == models.User.email)
     # db_user_create_ = await database.fetch_one(db_user_create)
-    if db_user_create is None:
+    if db_user_create:        
+        raise HTTPException(status_code=400, detail="user already exist") 
+    else:
         hashed_password = auth_handler.get_password_hash(userC.password)
         query = models.User(first_name = userC.first_name,last_name = userC.last_name,email = userC.email,password = hashed_password)
         db.add(query)
@@ -164,8 +167,6 @@ async def signup(userC:schemas.UserCreate,db: Session = Depends(get_db)):
         # return query
         # token = auth_handler.encode_token(userC.email)
         return {**userC.dict(),}
-    else:
-        raise HTTPException(status_code=400, detail="user already exist") 
 
 # #for login page
 @app.post("/login",response_model=schemas.Token,)
