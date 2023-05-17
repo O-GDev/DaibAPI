@@ -171,7 +171,7 @@ async def signup(userC:schemas.UserCreate,db: Session = Depends(get_db)):
 @app.post("/login",response_model=schemas.Token,)
 async def login(userL: OAuth2PasswordRequestForm = Depends(),db: Session = Depends(get_db)):
     # Get the user from the database by email
-    db_user_ =  db.query(models.User).filter(userL.first_name == models.User.first_name,userL.last_name == models.User.last_name,userL.email == models.User.email)
+    db_user_ =  db.query(models.User).filter(userL.username == models.User.email).first()
     
 
     
