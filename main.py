@@ -162,7 +162,7 @@ async def signup(userC:schemas.UserCreate,db: Session = Depends(get_db)):
         db.add(query)
         db.commit()
         db.refresh(query)
-        return userC.first_name                 
+        return query                 
     else:
         raise HTTPException(status_code=400, detail="user already exist")
         
