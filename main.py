@@ -162,7 +162,7 @@ async def signup(userC:schemas.UserCreate,db: Session = Depends(get_db)):
         db.add(query)
         db.commit()
         db.refresh(query)
-        return query                 
+        return {"status":"ok","":query}                 
     else:
         raise HTTPException(status_code=400, detail="user already exist")
         
@@ -216,7 +216,7 @@ async def update_profile(UserP:schemas.Profile,image: UploadFile = File(...),db:
     db_user_ =  db.query(models.User).filter(UserP.email == models.User.email)
     return {db_user_.dict()}
 
-
+ 
 @app.post("/feedback")
 async def Feedback(feed_back: schemas.Feedbacks,db: Session = Depends(get_db),get_current_user: int = Depends(oauth2.get_current_user)):
     #   await database.connect()
