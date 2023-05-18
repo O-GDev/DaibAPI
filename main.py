@@ -162,7 +162,8 @@ async def signup(userC:schemas.UserCreate,db: Session = Depends(get_db)):
         db.add(query)
         db.commit()
         db.refresh(query)
-        return Response(status_code=status.HTTP_200_OK)               
+        return{"":query,"status":status.HTTP_200_OK}
+        # return Response(status_code=status.HTTP_200_OK)               
     else:
         raise HTTPException(status_code=400, detail="user already exist")
         
