@@ -183,7 +183,7 @@ async def login(userL: OAuth2PasswordRequestForm = Depends(),db: Session = Depen
     else:
         # token = auth_handler.encode_token(db_user_.email)
         access_token = oauth2.create_access_token(data={"user_id": db_user_.id})
-        return {"access_token": access_token, "token_type":"bearer"}
+        return {"access_token": access_token, "token_type":"bearer","status":"ok"}
     
     # Return the user
     # return{db_user_.password,userL.password}
@@ -265,9 +265,9 @@ async def predict(input_parameters : schemas.model_input,get_current_user: int =
         return {"message": resi,"status":"it"}
 
 
-@app.post("/profile")
+@app.get("/profile")
 async def get_profiles(userP: schemas.Profiles,db: Session = Depends(get_db),get_current_user: int = Depends(oauth2.get_current_user)):
-    db_profiles_ =  db.query(models.User).filter(userP.email == models.User.email)
+    db_profiles_ =  db.query(models.User).filter(get_current_user.id == models.User.id)
     return{"last_name": db_profiles_.last_name,"first_name": db_profiles_.first_name,"email": db_profiles_.email,"occupation":db_profiles_.occupation,"house_address":db_profiles_.house_address,"phone_number":db_profiles_.phone_number,"diabetes-type":db_profiles_.diabetes_type}
 
 @app.get("/forgot-password")
