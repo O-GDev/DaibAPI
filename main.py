@@ -1,4 +1,4 @@
-from fastapi import FastAPI ,HTTPException ,File, UploadFile,status, Depends
+from fastapi import FastAPI ,HTTPException ,File, UploadFile,status, Depends,Response
 from sqlalchemy import create_engine, Column, Integer, String, Boolean, false
 from sqlalchemy.ext.declarative import declarative_base
 # from passlib.hash import bcrypt
@@ -152,7 +152,7 @@ async def root():
     # raise HTTPException(status_code=404, detail="page not found")
     return _responses.RedirectResponse("/docs")
 
-@app.post("/signup",response_model=schemas.UserResponse)
+@app.post("/signup",response_model=schemas.UserResponse, status_code=status.HTTP_200_OK)
 async def signup(userC:schemas.UserCreate,db: Session = Depends(get_db)):
     db_user_create = db.query(models.User).filter(userC.first_name == models.User.first_name,userC.last_name == models.User.last_name,userC.email == models.User.email).first()
     # db_user_create_ = await database.fetch_one(db_user_create)
@@ -162,7 +162,7 @@ async def signup(userC:schemas.UserCreate,db: Session = Depends(get_db)):
         db.add(query)
         db.commit()
         db.refresh(query)
-        return {"status":"ok","":query}                 
+        return Response(status_code=status.HTTP_200_OK)               
     else:
         raise HTTPException(status_code=400, detail="user already exist")
         
@@ -170,7 +170,7 @@ async def signup(userC:schemas.UserCreate,db: Session = Depends(get_db)):
     # return {**userC.dict(),}
 
 # #for login page
-@app.post("/login",response_model=schemas.Token,)
+@app.post("/login",response_model=schemas.Token, status_code=status.HTTP_200_OK)
 async def login(userL: OAuth2PasswordRequestForm = Depends(),db: Session = Depends(get_db)):
     # Get the user from the database by email
     db_user_ =  db.query(models.User).filter(userL.username == models.User.email).first()
@@ -183,7 +183,7 @@ async def login(userL: OAuth2PasswordRequestForm = Depends(),db: Session = Depen
     else:
         # token = auth_handler.encode_token(db_user_.email)
         access_token = oauth2.create_access_token(data={"user_id": db_user_.id})
-        return {"access_token": access_token, "token_type":"bearer","status":"ok"}
+        return {"access_token": access_token, "token_type":"bearer",}
     
     # Return the user
     # return{db_user_.password,userL.password}
@@ -203,28 +203,41 @@ async def handle_file_upload(file: UploadFile) -> str:
 
     return file_name
 
-@app.patch("/profile_picture/{id}")
+@app.patch("/profile_picture/{id}", status_code=status.HTTP_200_OK)
 async def update_profile(UserP:schemas.Profile,image: UploadFile = File(...),db: Session = Depends(get_db),get_current_user: int = Depends(oauth2.get_current_user)):
     Images = await handle_file_upload(image)
 
-    query = models.User(profile_pics = Images,occupation = UserP.occupation,house_address = UserP.house_address,
-                        phone_number = UserP.phone_number)
-    db.add(query)
-    db.commit()
-    db.refresh(query)
+    user = db.query(models.User).filter(get_current_user.id == models.User.id)
+
+    if user.first() == None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
+                            detail=f"user does not exist") 
+    else:
+        
+        query = models.User(profile_pics = Images,occupation = UserP.occupation,house_address = UserP.house_address,
+                            phone_number = UserP.phone_number)
+        db.add(query)
+        db.commit()
+        db.refresh(query)
+        return
         # return query
-    db_user_ =  db.query(models.User).filter(UserP.email == models.User.email)
-    return {db_user_.dict()}
+        # db_user_ =  db.query(models.User).filter(get_current_user.id == models.User.id)
+        # return {db_user_.dict()}
 
  
 @app.post("/feedback")
 async def Feedback(feed_back: schemas.Feedbacks,db: Session = Depends(get_db),get_current_user: int = Depends(oauth2.get_current_user)):
-    #   await database.connect()
-    query = models.Feedback(message1 = feed_back.message1,message2 = feed_back. message2,message3 = feed_back.message3)
-    db.add(query)
-    db.commit()
-    db.refresh(query)
-    return {"message":"Thanks for the feedback"}
+    #   await database.connect() user = db.query(models.User).filter(get_current_user.id == models.User.id)
+    user = db.query(models.User).filter(get_current_user.id == models.User.id)
+    if user.first() == None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
+                            detail=f"user does not exist") 
+    else:
+        query = models.Feedback(message1 = feed_back.message1,message2 = feed_back. message2,message3 = feed_back.message3)
+        db.add(query)
+        db.commit()
+        db.refresh(query)
+        return Response(status_code=status.HTTP_200_OK)
 
 
 @app.post('/predict')
@@ -283,7 +296,7 @@ async def request_password_reset(request: schemas.PasswordResetRequest,db: Sessi
 @app.delete("/users/{user_email}")
 async def delete_user(user_email: str,db: Session = Depends(get_db),get_current_user: int = Depends(oauth2.get_current_user)):
     
-    user = db.query(models.User).filter(user_email == models.User.email)
+    user = db.query(models.User).filter(get_current_user.id == models.User.id)
 
     if user.first() == None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 

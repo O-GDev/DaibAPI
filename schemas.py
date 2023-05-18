@@ -10,7 +10,6 @@ class UserOut(BaseModel):
     email: str
 
 class Profile(BaseModel):
-    email: str
     occupation: str
     house_address: str
     phone_number: str
