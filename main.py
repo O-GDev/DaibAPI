@@ -292,7 +292,7 @@ async def request_password_reset(request: schemas.PasswordResetRequest,db: Sessi
     else:
         return {"message": "Password reset email sent"}
 
-@app.delete("/users/{user_email}", status_code=status.HTTP_200_OK)
+@app.delete("/users/{user_email}", status_code=status.HTTP_200_OK) 
 async def delete_user(user_email: str,db: Session = Depends(get_db),get_current_user: int = Depends(oauth2.get_current_user)):
     
     user = db.query(models.User).filter(get_current_user.id == models.User.id)
