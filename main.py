@@ -218,7 +218,7 @@ async def update_profile(
         query = models.User(profile_pics = Images,
                             # occupation = UserP.occupation,house_address = UserP.house_address,
                             # phone_number = UserP.phone_number
-                            )
+                            ).filter(get_current_user.id == models.User.id)
         db.add(query)
         db.commit()
         db.refresh(query)
