@@ -220,7 +220,7 @@ async def update_profile(
         # user.phone_number = UserP.phone_number
         # user.update(user.dict(exclude_unset=True),synchronize_session=False)
         db.commit()
-        db.refresh(user)  
+        # db.refresh(user)  
         return {"message":"successful"}
         
  
