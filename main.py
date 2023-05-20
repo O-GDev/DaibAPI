@@ -220,7 +220,7 @@ async def update_profile(
         user.phone_number = UserP.phone_number
         user.update(user.dict(exclude_unset=True),synchronize_session=False)
         db.commit()
-        # db.refresh(user)  
+        db.refresh(user)  
         return {"message":"successful"}
         
  
@@ -302,7 +302,8 @@ async def delete_user(user_email: str,db: Session = Depends(get_db),get_current_
                             detail=f"user {user_email} does not exist") 
     else:
         user.delete(synchronize_session=False)
-        db.commit
+        db.commit()
+        db.refresh(user)
         return {"message": "User deleted",}
 
 
