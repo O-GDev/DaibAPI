@@ -202,7 +202,7 @@ async def handle_file_upload(file: UploadFile) -> str:
 
     return file_name
 
-@app.patch("/profile_picture/{id}", status_code=status.HTTP_200_OK)
+@app.put("/profile_picture/{id}", status_code=status.HTTP_200_OK)
 async def update_profile(
     # UserP:schemas.Profile,
                          image: UploadFile = File(...),db: Session = Depends(get_db),get_current_user: int = Depends(oauth2.get_current_user)):
@@ -215,13 +215,17 @@ async def update_profile(
                             detail=f"user does not exist") 
     else:
         
-        query = models.User(profile_pics = Images,
+        # query = models.User(profile_pics = Images,
                             # occupation = UserP.occupation,house_address = UserP.house_address,
                             # phone_number = UserP.phone_number
-                            ).filter(get_current_user.id == models.User.id)
-        db.add(query)
-        db.commit()
-        db.refresh(query)
+                            # )
+        user.update(profile_pics = Images,
+                    # occupation = UserP.occupation,house_address = UserP.house_address, phone_number = UserP.phone_number
+                    )                  
+
+        # db.add(query)
+        # db.commit()
+        # db.refresh(query)
         return {"message":"successful"}
         # return query
         # db_user_ =  db.query(models.User).filter(get_current_user.id == models.User.id)
