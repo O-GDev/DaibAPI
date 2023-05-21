@@ -182,7 +182,8 @@ async def login(userL: OAuth2PasswordRequestForm = Depends(),db: Session = Depen
     else:
         # token = auth_handler.encode_token(db_user_.email)
         access_token = oauth2.create_access_token(data={"user_id": db_user_.id})
-        return {"access_token": access_token, "token_type":"bearer",}
+        # status = Response(status_code=status.HTTP_200_OK)
+        return {"access_token": access_token, "token_type":"bearer", "status":status.HTTP_200_OK}
     
     # Return the user
     # return{db_user_.password,userL.password}
@@ -218,7 +219,7 @@ async def update_profile(
         # user.occupation = UserP.occupation
         # user.house_address = UserP.house_address
         # user.phone_number = UserP.phone_number
-        user.update(user,synchronize_session=False)
+        user.update(user.dict(exclude_unset=True),synchronize_session=False)
         db.commit()
         db.refresh(user)  
         return {"message":"successful","": user}
