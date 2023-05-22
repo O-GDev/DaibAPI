@@ -33,6 +33,7 @@ import schemas, models, oauth2
 from database import engine, get_db, SessionLocal 
 from sqlalchemy.orm import Session
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
+from typing import Annotated
 
 
 
@@ -172,7 +173,7 @@ async def signup(userC:schemas.UserCreate,db: Session = Depends(get_db)):
 
 # #for login page
 @app.post("/login",response_model=schemas.Token, status_code=status.HTTP_200_OK)
-async def login(userL: OAuth2PasswordRequestForm = Depends(),db: Session = Depends(get_db)):
+async def login(userL: Annotated[OAuth2PasswordRequestForm, Depends()],db: Session = Depends(get_db)):
     # Get the user from the database by email
     db_user_ =  db.query(models.User).filter(userL.username == models.User.email).first()
      
