@@ -38,7 +38,7 @@ class UserLogin(BaseModel):
 
 # Login response model
 class UserResponse(BaseModel):
-    emai: str
+    # email: str
     status: str
     class Config:
         orm_mode = True  
