@@ -38,7 +38,8 @@ class UserLogin(BaseModel):
 
 # Login response model
 class UserResponse(BaseModel):
-    email: str
+    username: str
+    status: str
     class Config:
         orm_mode = True  
 
