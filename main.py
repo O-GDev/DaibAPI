@@ -281,7 +281,7 @@ async def predict(input_parameters : schemas.model_input,get_current_user: int =
 
 @app.get("/profile", status_code=status.HTTP_200_OK)
 async def get_profiles(db: Session = Depends(get_db),get_current_user: int = Depends(oauth2.get_current_user)):
-    db_profiles_ =  db.query(models.User).filter(get_current_user.id == models.User.id)
+    db_profiles_ =  db.query(models.User).filter(get_current_user.id == models.User.id).first()
     return{"last_name": db_profiles_.last_name,"first_name": db_profiles_.first_name,"email": db_profiles_.email,"occupation":db_profiles_.occupation,"house_address":db_profiles_.house_address,"phone_number":db_profiles_.phone_number,"diabetes-type":db_profiles_.diabetes_type}
 
 @app.get("/forgot-password", status_code=status.HTTP_200_OK)
