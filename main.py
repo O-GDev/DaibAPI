@@ -39,7 +39,7 @@ from typing import Annotated
 
 
 models.Base.metadata.create_all(bind=engine)
-app = FastAPI()
+app = FastAPI(title="Diabetes Prediction API")
 # templates = Jinja2Templates(directory="template")
 # the filename of the saved model
 # filename = 'diabetes_model.sav'
@@ -47,7 +47,7 @@ app = FastAPI()
 # loaded_model = pickle.load(open(filename, 'rb'))
 # _JWT_SECRET = ""
 
-app.mount("/static", StaticFiles(directory="static"), name="static") 
+# app.mount("/static", StaticFiles(directory="static"), name="static") 
 auth_handler = AuthHandler()
 BASEDIR = os.path.dirname(__file__)
 
@@ -190,9 +190,9 @@ async def login(userL: Annotated[OAuth2PasswordRequestForm, Depends()],db: Sessi
     # return{db_user_.password,userL.password}
 #     # return {"message":"Signin Successful"}
 
-async def handle_file_upload(file: UploadFile) -> str: 
+async def handle_file_upload(file: UploadFile) -> str:
     _, ext = os.path.splitext(file.filename)
-    img_dir = os.path.join(BASEDIR, 'statics/media')
+    img_dir = os.path.join(BASEDIR, 'statics/media/')
     if not os.path.exists(img_dir):
         os.makedirs(img_dir)
     content = await file.read()
