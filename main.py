@@ -47,10 +47,11 @@ app = FastAPI(title="Diabetes Prediction API")
 # loaded_model = pickle.load(open(filename, 'rb'))
 # _JWT_SECRET = ""
 
+
 # app.mount("/static", StaticFiles(directory="static"), name="static") 
 auth_handler = AuthHandler()
 BASEDIR = os.path.dirname(__file__)
-
+app.mount("/static", StaticFiles(directory=BASEDIR + "/statics"), name="static")
 # app.mount("/statics", StaticFiles(directory=BASEDIR + "/statics"), name="statics")
 
 
@@ -220,7 +221,7 @@ async def update_profile(image: UploadFile = File(...),db: Session = Depends(get
         # user.phone_number = UserP.phone_number
         # user.update(user.dict(exclude_unset=True),synchronize_session=False)
         db.commit()
-        print(Images)
+        # print(Images)
         # db.refresh(user)  
         return {"message":"successful","": user}
         
