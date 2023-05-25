@@ -54,9 +54,9 @@ BASEDIR = os.path.dirname(__file__)
 
 # app = VersionFastAPI(app)
 
-app.mount("/static", StaticFiles(directory=BASEDIR + "/statics"), name="static")
-# app.mount("/statics", StaticFiles(directory=BASEDIR + "/statics"), name="statics")
-
+# app.mount("/static", StaticFiles(directory="static"), name="static")
+# app.mount("/static", StaticFiles(directory="statics"), name="static")
+app.mount("/statics", StaticFiles(directory=BASEDIR + "/statics/"), name="statics")
 
 diabetes_dataset = pd.read_csv('diabetes.csv') 
 
