@@ -213,7 +213,7 @@ async def update_profile(image: UploadFile = File(...),db: Session = Depends(get
                          get_current_user: int = Depends(oauth2.get_current_user)):
     Images = await handle_file_upload(image)
 
-    # user = db.query(models.User).filter(get_current_user.id == models.User.id)
+    user = db.query(models.User).filter(get_current_user.id == models.User.id)
 
     # if user.first() == None:
     #     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
