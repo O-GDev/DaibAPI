@@ -47,11 +47,11 @@ app = FastAPI()
 # loaded_model = pickle.load(open(filename, 'rb'))
 # _JWT_SECRET = ""
 
-# app.mount("/static", StaticFiles(directory="static"), name="static") 
+app.mount("/static", StaticFiles(directory="static"), name="static") 
 auth_handler = AuthHandler()
 BASEDIR = os.path.dirname(__file__)
 
-app.mount("/statics", StaticFiles(directory=BASEDIR + "/statics"), name="statics")
+# app.mount("/statics", StaticFiles(directory=BASEDIR + "/statics"), name="statics")
 
 
 diabetes_dataset = pd.read_csv('diabetes.csv') 
