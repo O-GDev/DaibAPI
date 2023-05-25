@@ -51,6 +51,9 @@ app = FastAPI(title="Diabetes Prediction API")
 # app.mount("/static", StaticFiles(directory="static"), name="static") 
 auth_handler = AuthHandler()
 BASEDIR = os.path.dirname(__file__)
+
+# app = VersionFastAPI(app)
+
 app.mount("/static", StaticFiles(directory=BASEDIR + "/statics"), name="static")
 # app.mount("/statics", StaticFiles(directory=BASEDIR + "/statics"), name="statics")
 
