@@ -222,13 +222,13 @@ async def update_profile(image: UploadFile = File(...),db: Session = Depends(get
 
         user.profile_pics = Images
         # user.update(user.dict(exclude_unset=True),synchronize_session=False)
-        # db.commit()
+        db.commit()
         # print(Images)
         # db.refresh(user)  
         return {"message":"successful","user_details": user}
         
  
- 
+
 @app.post("/feedback", status_code=status.HTTP_200_OK)
 async def Feedback(feed_back: schemas.Feedbacks,db: Session = Depends(get_db),get_current_user: int = Depends(oauth2.get_current_user)):
     #   await database.connect() user = db.query(models.User).filter(get_current_user.id == models.User.id)
