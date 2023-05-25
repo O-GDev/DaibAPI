@@ -192,7 +192,7 @@ async def login(userL: Annotated[OAuth2PasswordRequestForm, Depends()],db: Sessi
 
 async def handle_file_upload(file: UploadFile) -> str:
     _, ext = os.path.splitext(file.filename)
-    img_dir = os.path.join(BASEDIR, 'statics/media/')
+    img_dir = os.path.join(BASEDIR, 'statics/')
     if not os.path.exists(img_dir):
         os.makedirs(img_dir)
     content = await file.read()
@@ -205,9 +205,7 @@ async def handle_file_upload(file: UploadFile) -> str:
     return file_name
 
 @app.put("/profile_picture", status_code=status.HTTP_200_OK)
-async def update_profile(
-    # UserP: schemas.Profile,
-                         image: UploadFile = File(...),db: Session = Depends(get_db),get_current_user: int = Depends(oauth2.get_current_user)):
+async def update_profile(image: UploadFile = File(...),db: Session = Depends(get_db),get_current_user: int = Depends(oauth2.get_current_user)):
     Images = await handle_file_upload(image)
 
     user = db.query(models.User).filter(get_current_user.id == models.User.id)
