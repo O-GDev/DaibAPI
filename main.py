@@ -215,7 +215,7 @@ async def update_profile(image: UploadFile = File(...),db: Session = Depends(get
 
     user = db.query(models.User).filter(get_current_user.id == models.User.id).first()
 
-    if user.first() == None:
+    if user == None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
                             detail=f"user does not exist") 
     else:
