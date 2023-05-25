@@ -51,7 +51,7 @@ app = FastAPI()
 auth_handler = AuthHandler()
 BASEDIR = os.path.dirname(__file__)
 
-# app.mount("/statics", StaticFiles(directory=BASEDIR + "/statics"), name="statics")
+app.mount("/statics", StaticFiles(directory=BASEDIR + "/statics"), name="statics")
 
 
 diabetes_dataset = pd.read_csv('diabetes.csv') 
@@ -222,6 +222,7 @@ async def update_profile(
         # user.phone_number = UserP.phone_number
         # user.update(user.dict(exclude_unset=True),synchronize_session=False)
         db.commit()
+        print(Images)
         # db.refresh(user)  
         return {"message":"successful","": user}
         
