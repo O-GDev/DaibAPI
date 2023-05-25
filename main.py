@@ -204,7 +204,7 @@ async def handle_file_upload(file: UploadFile) -> str:
 
     return file_name
 
-@app.put("/profile_picture/{id}", status_code=status.HTTP_200_OK)
+@app.put("/profile_picture", status_code=status.HTTP_200_OK)
 async def update_profile(
     # UserP: schemas.Profile,
                          image: UploadFile = File(...),db: Session = Depends(get_db),get_current_user: int = Depends(oauth2.get_current_user)):
@@ -220,9 +220,9 @@ async def update_profile(
         # user.occupation = UserP.occupation
         # user.house_address = UserP.house_address
         # user.phone_number = UserP.phone_number
-        user.update(user.dict(exclude_unset=True),synchronize_session=False)
+        # user.update(user.dict(exclude_unset=True),synchronize_session=False)
         db.commit()
-        db.refresh(user)  
+        # db.refresh(user)  
         return {"message":"successful","": user}
         
  
