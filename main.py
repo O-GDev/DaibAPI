@@ -206,7 +206,8 @@ async def handle_file_upload(file: UploadFile) -> str:
     return file_name
 
 @app.put("/profile_picture", status_code=status.HTTP_200_OK)
-async def update_profile(image: UploadFile = File(...),db: Session = Depends(get_db),get_current_user: int = Depends(oauth2.get_current_user)):
+async def update_profile(UserP:schemas.Profile, image: UploadFile = File(...),db: Session = Depends(get_db),
+                         get_current_user: int = Depends(oauth2.get_current_user)):
     Images = await handle_file_upload(image)
 
     user = db.query(models.User).filter(get_current_user.id == models.User.id)
@@ -216,14 +217,14 @@ async def update_profile(image: UploadFile = File(...),db: Session = Depends(get
                             detail=f"user does not exist") 
     else:
         user.profile_pics = Images
-        # user.occupation = UserP.occupation
-        # user.house_address = UserP.house_address
-        # user.phone_number = UserP.phone_number
+        user.occupation = UserP.occupation
+        user.house_address = UserP.house_address
+        user.phone_number = UserP.phone_number
         # user.update(user.dict(exclude_unset=True),synchronize_session=False)
         db.commit()
         # print(Images)
         # db.refresh(user)  
-        return {"message":"successful","": user}
+    return {"message":"successful","user_details": user}
         
  
 @app.post("/feedback", status_code=status.HTTP_200_OK)
