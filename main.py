@@ -213,21 +213,22 @@ async def update_profile(image: UploadFile = File(...),db: Session = Depends(get
                          get_current_user: int = Depends(oauth2.get_current_user)):
     Images = await handle_file_upload(image)
 
-    user = db.query(models.User).filter(get_current_user.id == models.User.id)
+    user = db.query(models.User).filter(get_current_user.id == models.User.id).first()
 
-    # if user.first() == None:
-    #     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
-    #                         detail=f"user does not exist") 
-    # else:
+    if user.first() == None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
+                            detail=f"user does not exist") 
+    else:
+
     #     user.profile_pics = Images
         # user.occupation = UserP.occupation
         # user.house_address = UserP.house_address
         # user.phone_number = UserP.phone_number
         # user.update(user.dict(exclude_unset=True),synchronize_session=False)
         # db.commit()
-        # print(Images)
+        print(Images)
         # db.refresh(user)  
-    return {"message":"successful","user_details": Images}
+        return {"message":"successful","user_details": Images}
         
  
 @app.post("/feedback", status_code=status.HTTP_200_OK)
