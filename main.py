@@ -220,7 +220,7 @@ async def update_profile(image: UploadFile = File(...),db: Session = Depends(get
                             detail=f"user does not exist") 
     else:
 
-    #     user.profile_pics = Images
+        user.profile_pics = Images
         # user.occupation = UserP.occupation
         # user.house_address = UserP.house_address
         # user.phone_number = UserP.phone_number
