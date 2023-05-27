@@ -218,13 +218,12 @@ async def update_profile(image: UploadFile = File(...),db: Session = Depends(get
     if user == None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
                             detail=f"user does not exist") 
+    elif(Images == None):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
+                            detail=f"Empty Field") 
     else:
-
         user.profile_pics = Images
-        # user.update(user.dict(exclude_unset=True),synchronize_session=False)
         db.commit()
-        # print(Images)
-        # db.refresh(user)  
         return {"status":status.HTTP_200_OK,"user_details": user.profile_pics}
         
 @app.put("/profiles")
@@ -235,15 +234,14 @@ async def update_profiles_details(UserP:schemas.Profile,db: Session = Depends(ge
       if user == None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
                             detail=f"user does not exist") 
+      elif(UserP == None):
+          return HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                               detail=f"Empty Field")
       else:
-
         user.occupation = UserP.occupation
         user.house_address = UserP.house_address
         user.phone_number = UserP.phone_number
-        # user.update(user.dict(exclude_unset=True),synchronize_session=False)
         db.commit()
-        # print(Images)
-        # db.refresh(user)  
         return {"status":status.HTTP_200_OK}
 
 
@@ -295,9 +293,9 @@ async def predict(input_parameters : schemas.model_input,get_current_user: int =
         
     
     if (prediction[0] == 0):
-        return {"message":"The person is not diabetic","status":"notit"}
+        raise HTTPException(status_code=status.HTTP_204_NO_CONTENT)
     else:
-        return {"message": resi,"status":"it"}
+        return {"result": resi,"status":status.HTTP_200_OK}
 
 
 @app.get("/profile", status_code=status.HTTP_200_OK)
