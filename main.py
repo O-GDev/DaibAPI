@@ -279,23 +279,25 @@ async def predict(input_parameters : schemas.model_input,get_current_user: int =
     dpf = input_dictionary['DiabetesPedigreeFunction']
     age = input_dictionary['Age']
 
-    input_list = [preg, glu, bp, skin, insulin, bmi, dpf, age]
+    input_list = [[preg, glu, bp, skin, insulin, bmi, dpf, age]]
     
     prediction = diabetes_model.predict([input_list])
 
-    confidence = diabetes_model.predict_proba([input_list])
+    confidence = diabetes_model.predict_proba(input_list)[:, 1]
     
-    result = np.amax(confidence[0])
+    # result = np.amax(confidence[0])
 
-    res = (result * 100)
+    # res = (result * 100)
      
-    resi = round(res, 2 ) 
+    # resi = round(res, 2 ) 
+        
+    percentage_risk = confidence * 100    
         
     
     if (prediction[0] == 0):
         raise HTTPException(status_code=status.HTTP_204_NO_CONTENT)
     else:
-        return {"result": resi,"status":status.HTTP_200_OK}
+        return {"result": percentage_risk,"status":status.HTTP_200_OK}
 
 
 @app.get("/profile", status_code=status.HTTP_200_OK)
