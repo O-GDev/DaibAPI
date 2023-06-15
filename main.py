@@ -289,7 +289,7 @@ async def predict(input_parameters : schemas.model_input,get_current_user: int =
 
     res = (confidence * 100)
      
-    resi = round(res) 
+    # resi = round(res) 
         
     
     if (prediction[0] == 0):
