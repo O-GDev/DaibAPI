@@ -279,25 +279,23 @@ async def predict(input_parameters : schemas.model_input,get_current_user: int =
     dpf = input_dictionary['DiabetesPedigreeFunction']
     age = input_dictionary['Age']
 
-    input_list = [[preg, glu, bp, skin, insulin, bmi, dpf, age]]
+    input_list = [preg, glu, bp, skin, insulin, bmi, dpf, age]
     
     prediction = diabetes_model.predict([input_list])
 
-    confidence = diabetes_model.predict_proba(input_list)[:, 1]
+    confidence = diabetes_model.predict_proba([input_list])
     
     # result = np.amax(confidence[0])
 
-    # res = (result * 100)
+    res = (confidence * 100)
      
     # resi = round(res, 2 ) 
-        
-    percentage_risk = confidence * 100    
         
     
     if (prediction[0] == 0):
         raise HTTPException(status_code=status.HTTP_204_NO_CONTENT)
     else:
-        return {"result": percentage_risk,"status":status.HTTP_200_OK}
+        return {"result": res,"status":status.HTTP_200_OK}
 
 
 @app.get("/profile", status_code=status.HTTP_200_OK)
@@ -373,8 +371,7 @@ async def delete_user(user_email: str,db: Session = Depends(get_db),get_current_
 # #     return{} occupation=profU.occupation,house_address=profU.house_address,phone_number=profU.phone_number
 
 # async def handle_file_upload(file: UploadFile) -> str: 
-#     _, ext = 
-# os.path.splitext(file.filename)
+#     _, ext = os.path.splitext(file.filename)
 #     img_dir = os.path.join(BASEDIR, 'statics/media')
 #     if not os.path.exists(img_dir):
 #         os.makedirs(img_dir)
