@@ -87,8 +87,8 @@ test_data_accuracy = accuracy_score(X_test_prediction, Y_test)
 # print('Accuracy score of the test data : ', test_data_accuracy)
 
 
-# filename = 'diabetes_model.sav'
-# pickle.dump(classifier, open(filename, 'wb'))
+filename = 'diabetes_model.sav'
+pickle.dump(classifier, open(filename, 'wb'))
 
 # DATABASE_URL = "postgresql://biqxjsxynyhqin:2c11b52c42eb4e08c70ea9b178b9e1ae4996a0744e79bd6eed6df72dfadf50f8@ec2-107-21-67-46.compute-1.amazonaws.com:5432/d68l9na6c3l27c"
 # database = databases.Database(DATABASE_URL)
@@ -147,7 +147,7 @@ def verify_password(self, password: str):
 
 
 
-# diabetes_model = pickle.load(open('diabetes_model.sav', 'rb'))
+diabetes_model = pickle.load(open('diabetes_model.sav', 'rb'))
 
 # class PredictDiabetes(BaseModel):
 
@@ -279,11 +279,11 @@ async def predict(input_parameters : schemas.model_input,get_current_user: int =
     dpf = input_dictionary['DiabetesPedigreeFunction']
     age = input_dictionary['Age']
 
-    input_list = [preg, glu, bp, skin, insulin, bmi, dpf, age]
+    input_list = [[preg, glu, bp, skin, insulin, bmi, dpf, age]]
     
-    prediction = classifier.predict([input_list])
+    prediction = diabetes_model.predict([input_list])
 
-    confidence = classifier.predict_proba([input_list])[:, 1]
+    confidence = diabetes_model.predict_proba(input_list)[:, 1]
     
     result = np.amax(confidence[0])
 
