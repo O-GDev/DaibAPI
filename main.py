@@ -285,9 +285,9 @@ async def predict(input_parameters : schemas.model_input,get_current_user: int =
 
     confidence = diabetes_model.predict_proba([input_list])
     
-    # result = np.amax(confidence[0])
+    result = np.amax(confidence[0])
 
-    res = (confidence * 100)
+    res = (result * 100)
      
     # resi = round(res) 
         
@@ -295,7 +295,7 @@ async def predict(input_parameters : schemas.model_input,get_current_user: int =
     if (prediction[0] == 0):
         raise HTTPException(status_code=status.HTTP_204_NO_CONTENT)
     else:
-        return {"result": res,"status":status.HTTP_200_OK,"":confidence}
+        return {"result": res,"status":status.HTTP_200_OK,"":result}
 
 
 @app.get("/profile", status_code=status.HTTP_200_OK)
