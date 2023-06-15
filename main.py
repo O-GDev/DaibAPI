@@ -373,7 +373,8 @@ async def delete_user(user_email: str,db: Session = Depends(get_db),get_current_
 # #     return{} occupation=profU.occupation,house_address=profU.house_address,phone_number=profU.phone_number
 
 # async def handle_file_upload(file: UploadFile) -> str: 
-#     _, ext = os.path.splitext(file.filename)
+#     _, ext = 
+# os.path.splitext(file.filename)
 #     img_dir = os.path.join(BASEDIR, 'statics/media')
 #     if not os.path.exists(img_dir):
 #         os.makedirs(img_dir)
