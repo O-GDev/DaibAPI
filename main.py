@@ -289,13 +289,13 @@ async def predict(input_parameters : schemas.model_input,get_current_user: int =
 
     res = (confidence * 100)
      
-    resi = round(res, 2 ) 
+    resi = round(res) 
         
     
     if (prediction[0] == 0):
         raise HTTPException(status_code=status.HTTP_204_NO_CONTENT)
     else:
-        return {"result": resi,"status":status.HTTP_200_OK}
+        return {"result": resi,"status":status.HTTP_200_OK,"":confidence}
 
 
 @app.get("/profile", status_code=status.HTTP_200_OK)
