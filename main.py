@@ -280,7 +280,7 @@ input
 .age, 
 input
 .bmi, 
-input
+input 
 .bp, 
 input
 .glu,
@@ -288,8 +288,6 @@ input
 .preg,
 input
 .insulin,
-input
-.bmi,
 input
 .dpf,
 input
@@ -328,6 +326,11 @@ input
         raise HTTPException(status_code=status.HTTP_204_NO_CONTENT)
     else:
         return {"status":status.HTTP_200_OK,"risk_percentage": resi}
+
+
+@app.post('/forgot-password', status_code=status.HTTP_200_OK)
+async def forgot_pasword(db: Session = Depends(get_db),):
+    return
 
 
 @app.get("/profile", status_code=status.HTTP_200_OK)
