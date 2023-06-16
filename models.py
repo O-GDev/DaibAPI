@@ -11,10 +11,10 @@ class User(Base):
     email = Column(String, unique=True, index=True, nullable = False)
     token = Column(String, unique=True, )
     password = Column(String, nullable = False)
-    occupation = Column(String, unique=True, index=True, nullable = False)
-    house_address = Column(String, unique=True, index=True, nullable = False)
-    phone_number = Column(String, unique=True, index=True, nullable = False)
-    profile_pics = Column(String, unique=True, index=True, nullable = False)
+    occupation = Column(String, unique=True, index=True, )
+    house_address = Column(String, unique=True, index=True, )
+    phone_number = Column(String, unique=True, index=True, )
+    profile_pics = Column(String, unique=True, index=True, )
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
 
 
