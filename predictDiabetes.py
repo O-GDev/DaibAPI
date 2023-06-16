@@ -5,7 +5,7 @@ from sklearn.metrics import accuracy_score
 import schemas
 
 # Load the dataset
-dataset = pd.read_csv('diabetes_dataset.csv')  # Replace 'diabetes_dataset.csv' with your dataset
+dataset = pd.read_csv('diabetes.csv')  # Replace 'diabetes_dataset.csv' with your dataset
 
 # Split the dataset into features and target variable
 X = dataset.drop('diabetes', axis=1)  # Assuming 'diabetes' is the target column
