@@ -275,29 +275,9 @@ async def predict(input: schemas.model_input,get_current_user: int = Depends(oau
     # dpf = input_dictionary['DiabetesPedigreeFunction']
     # age = input_dictionary['Age']
 
-    input_data = [
-input
-.age, 
-input
-.bmi, 
-input 
-.bp, 
-input
-.glu,
-input
-.preg,
-input
-.insulin,
-input
-.dpf,
-input
-.skin,]
+    input_data = [input.age,input.bmi, input.bp, input.glu, input.preg, input.insulin, input.dpf, input.skin,]
      
-    input_data = np.array(input_data).reshape(
-1
-, -
-1
-)
+    input_data = np.array(input_data).reshape(1, -1)
     
      
 
