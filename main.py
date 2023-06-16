@@ -279,11 +279,11 @@ async def predict(input_parameters : schemas.model_input,get_current_user: int =
     dpf = input_dictionary['DiabetesPedigreeFunction']
     age = input_dictionary['Age']
 
-    input_list = [[preg, glu, bp, skin, insulin, bmi, dpf, age]]
+    input_list = [preg, glu, bp, skin, insulin, bmi, dpf, age]
     
     prediction = diabetes_model.predict([input_list])
 
-    confidence = diabetes_model.predict_proba(input_list)[:, 1]
+    confidence = diabetes_model.predict_proba([input_list])
     
     result = np.amax(confidence[0])
 
