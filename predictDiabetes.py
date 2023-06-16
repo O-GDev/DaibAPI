@@ -8,8 +8,8 @@ import schemas
 dataset = pd.read_csv('diabetes.csv')  # Replace 'diabetes_dataset.csv' with your dataset
 
 # Split the dataset into features and target variable
-X = dataset.drop('diabetes', axis=1)  # Assuming 'diabetes' is the target column
-y = dataset['diabetes']
+X = dataset.drop('Outcome', axis=1)  # Assuming 'diabetes' is the target column
+y = dataset['Outcome']
 
 # Split the data into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
