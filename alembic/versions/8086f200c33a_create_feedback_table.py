@@ -1,8 +1,8 @@
 """create feedback table
 
-Revision ID: ad3b57e81c8d
-Revises: cac3e74fa532
-Create Date: 2023-05-18 22:35:27.504194
+Revision ID: 8086f200c33a
+Revises: 6985b19ccb45
+Create Date: 2023-06-16 21:42:37.968050
 
 """
 from alembic import op
@@ -10,12 +10,10 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'ad3b57e81c8d'
-down_revision = 'cac3e74fa532'
+revision = '8086f200c33a'
+down_revision = '6985b19ccb45'
 branch_labels = None
 depends_on = None
-
-
 
 def upgrade() -> None:
     op.create_table('feedback',

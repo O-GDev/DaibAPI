@@ -9,6 +9,7 @@ class User(Base):
     first_name = Column(String, unique=True, index=True, nullable = False)
     last_name = Column(String, unique=True, index=True, nullable = False)
     email = Column(String, unique=True, index=True, nullable = False)
+    token = Column(String, unique=True, )
     password = Column(String, nullable = False)
     occupation = Column(String, unique=True, index=True, nullable = False)
     house_address = Column(String, unique=True, index=True, nullable = False)
