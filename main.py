@@ -174,7 +174,7 @@ async def Feedback(feed_back: schemas.Feedbacks,db: Session = Depends(get_db),ge
 @app.post('/predict', status_code=status.HTTP_200_OK)
 async def predict(input: schemas.model_input,get_current_user: int = Depends(oauth2.get_current_user)):
     user_data = [[input.preg, input.glu, input.bp, input.skin, input.insulin, input.bmi, input.dpf, input.age]]  
-    prediction = PredictDiabetesHandle(user_data)
+    prediction = await PredictDiabetesHandle(user_data)
     return  {"message": prediction}
 
 
