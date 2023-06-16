@@ -35,6 +35,7 @@ from sqlalchemy.orm import Session
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from typing import Annotated
 from predictDiabetes import PredictDiabetesHandle
+import emailUtil
 
 
 
@@ -192,10 +193,33 @@ async def request_password_reset(request: schemas.PasswordResetRequest,db: Sessi
     # Retrieve user with matching email from database
     user_ = db.query(models.User).filter(request.email == models.User.email)
     if user_ is None:
-        # Send password reset email to the user's email address
         return {"message": "User not found"}
     else:
-        return {"message": "Password reset email sent"}
+        reset_code = str(uuid.uuid1())
+        user_.token = reset_code
+        db.commit() 
+        # Send password reset email to the user's email address
+        subject = f"Hello {user_.first_name}"
+        recipient = [request.email]
+        message = """
+        <!Doctype html>
+        <html>
+        <title>Reset Password</title>
+        <body>
+        <div style="width:100%;font-family: monospace;">
+        <h1>Hello, {0:}</h1>
+        <p>Someone requested for a password reset link. If you are aware of this, Click the button right below this, Otherwise Ignore!</p>
+        <a href="https://diabetes-prediction-api.herokuapp.com/forgot-password?reset_password_token={1:}" style="box-sizing:border-box;border-color:light-blue"></a>
+        </div>
+        </body>
+        </html>
+        """.format(user_.first_name, reset_code)
+
+        await emailUtil(subject, recipient, message)
+        return {
+            "status":status.HTTP_200_OK,
+            "message": "we've sent a reset link to your email"
+            }
 
 @app.delete("/users/{user_email}", status_code=status.HTTP_200_OK) 
 async def delete_user(user_email: str,db: Session = Depends(get_db),get_current_user: int = Depends(oauth2.get_current_user)):
