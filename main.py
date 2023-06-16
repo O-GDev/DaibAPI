@@ -261,7 +261,7 @@ async def Feedback(feed_back: schemas.Feedbacks,db: Session = Depends(get_db),ge
 
 
 @app.post('/predict', status_code=status.HTTP_200_OK)
-async def predict(input_parameters : schemas.model_input,get_current_user: int = Depends(oauth2.get_current_user)):
+async def predict(input: schemas.model_input,get_current_user: int = Depends(oauth2.get_current_user)):
    
     # input_data = input_parameters.json()
     # input_dictionary = json.loads(input_data)

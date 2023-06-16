@@ -56,15 +56,14 @@ class Reminder(BaseModel):
 
 
 class model_input(BaseModel):
-    
-    pregnancies : int
-    Glucose : int
-    BloodPressure : int
-    SkinThickness : int
-    Insulin : int
-    BMI : float
-    DiabetesPedigreeFunction : float
-    Age : int      
+    preg : int
+    glu : int
+    bp : int
+    skin : int
+    insulin : int
+    bmi : float
+    dpf : float
+    age : int      
 
 class Token(BaseModel):
     access_token: str
