@@ -262,40 +262,72 @@ async def Feedback(feed_back: schemas.Feedbacks,db: Session = Depends(get_db),ge
 
 @app.post('/predict', status_code=status.HTTP_200_OK)
 async def predict(input_parameters : schemas.model_input,get_current_user: int = Depends(oauth2.get_current_user)):
-    # result = {}
-    # if request.method == "POST":
-        # get the features to predict
-        # form = await request.form()
-        # form data
-    input_data = input_parameters.json()
-    input_dictionary = json.loads(input_data)
+   
+    # input_data = input_parameters.json()
+    # input_dictionary = json.loads(input_data)
     
-    preg = input_dictionary['pregnancies']
-    glu = input_dictionary['Glucose']
-    bp = input_dictionary['BloodPressure']
-    skin = input_dictionary['SkinThickness']
-    insulin = input_dictionary['Insulin']
-    bmi = input_dictionary['BMI']
-    dpf = input_dictionary['DiabetesPedigreeFunction']
-    age = input_dictionary['Age']
+    # preg = input_dictionary['pregnancies']
+    # glu = input_dictionary['Glucose']
+    # bp = input_dictionary['BloodPressure']
+    # skin = input_dictionary['SkinThickness']
+    # insulin = input_dictionary['Insulin']
+    # bmi = input_dictionary['BMI']
+    # dpf = input_dictionary['DiabetesPedigreeFunction']
+    # age = input_dictionary['Age']
 
-    input_list = [preg, glu, bp, skin, insulin, bmi, dpf, age]
+    input_data = [
+input
+.age, 
+input
+.bmi, 
+input
+.bp, 
+input
+.glu,
+input
+.preg,
+input
+.insulin,
+input
+.bmi,
+input
+.dpf,
+input
+.skin,]
+     
+    input_data = np.array(input_data).reshape(
+1
+, -
+1
+)
     
-    prediction = diabetes_model.predict([input_list])
+     
 
-    confidence = diabetes_model.predict_proba([input_list])
+    # input_list = [preg, glu, bp, skin, insulin, bmi, dpf, age]
     
-    result = np.amax(confidence[0])
+    # prediction = diabetes_model.predict([input_list])
+
+    # confidence = diabetes_model.predict_proba([input_list])
+    
+    # result = np.amax(confidence[0])
+
+    # res = (result * 100)
+     
+    # resi = round(res) 
+    prediction = diabetes_model.predict(input_data)
+
+    risk_percentage = diabetes_model.predict_proba(input_data)
+
+    result = np.amax(risk_percentage[0])
 
     res = (result * 100)
      
-    # resi = round(res) 
-        
+    resi = round(res)
     
-    if (prediction[0] == 0):
+    if (prediction == 0):
         raise HTTPException(status_code=status.HTTP_204_NO_CONTENT)
     else:
-        return {"result": res,"status":status.HTTP_200_OK,"":result}
+        return {"status":status.HTTP_200_OK,"risk_percentage": resi}
 
 
 @app.get("/profile", status_code=status.HTTP_200_OK)
