@@ -32,5 +32,6 @@ async def PredictDiabetesHandle(t) -> str:
     user_data = t
 # Predict the diabetes risk for the user
     risk_percentage = model.predict_proba(user_data)[0][1] * 100
-    print("Diabetes risk percentage:", risk_percentage)
+    risk_percentage_round = round(risk_percentage)
+    print("Diabetes risk percentage:", risk_percentage_round)
     return risk_percentage
