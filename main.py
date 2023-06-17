@@ -35,7 +35,7 @@ from sqlalchemy.orm import Session
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from typing import Annotated
 from predictDiabetes import PredictDiabetesHandle
-from emailUtil import simple_send
+import emailUtil
 
 
 
@@ -215,7 +215,7 @@ async def request_password_reset(request: schemas.PasswordResetRequest,db: Sessi
         </html>
         """.format(request.email, reset_code)
 
-        await simple_send(subject, recipient, message)
+        await emailUtil.simple_send(subject, recipient, message)
         return {
             "status":status.HTTP_200_OK,
             "message": "we've sent a reset link to your email"
