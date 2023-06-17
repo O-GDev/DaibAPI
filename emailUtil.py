@@ -7,7 +7,9 @@ from starlette.responses import JSONResponse
 from starlette.config import Config
 
 config = Config(".env")
-
+print("==============================")
+print(config("MAIL_USERNAME"))
+print("==============================")
 conf = ConnectionConfig(
     MAIL_USERNAME =config("MAIL_USERNAME"),
     MAIL_PASSWORD = config("MAIL_PASSWORD"),
