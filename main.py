@@ -191,7 +191,7 @@ async def get_profiles(db: Session = Depends(get_db),get_current_user: int = Dep
 @app.post("/forgot-password", status_code=status.HTTP_200_OK)
 async def request_password_reset(request: schemas.PasswordResetRequest,db: Session = Depends(get_db),):
     # Retrieve user with matching email from database
-    user_ = db.query(models.User).filter(request.email == models.User.email)
+    user_ = db.query(models.User).filter(request.email == models.User.email).first()
     if user_ is None:
         return {"message": "User not found"}
     else:
@@ -199,7 +199,7 @@ async def request_password_reset(request: schemas.PasswordResetRequest,db: Sessi
         user_.token = reset_code
         db.commit() 
         # Send password reset email to the user's email address
-        subject = f"Hello {user_.first_name}"
+        subject = f"Hello {request.email}"
         recipient = [request.email]
         message = """
         <!Doctype html>
@@ -213,7 +213,7 @@ async def request_password_reset(request: schemas.PasswordResetRequest,db: Sessi
         </div>
         </body>
         </html>
-        """.format(user_.first_name, reset_code)
+        """.format(request.email, reset_code)
 
         await emailUtil(subject, recipient, message)
         return {
