@@ -189,7 +189,7 @@ async def get_profiles(db: Session = Depends(get_db),get_current_user: int = Dep
 # async def HandleRequestPassword():
 
 @app.get("/forgot-password", status_code=status.HTTP_200_OK)
-async def request_password_reset(request: schemas.PasswordResetRequest,db: Session = Depends(get_db),get_current_user: int = Depends(oauth2.get_current_user)):
+async def request_password_reset(request: schemas.PasswordResetRequest,db: Session = Depends(get_db),):
     # Retrieve user with matching email from database
     user_ = db.query(models.User).filter(request.email == models.User.email)
     if user_ is None:
